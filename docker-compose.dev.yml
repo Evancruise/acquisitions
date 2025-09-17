@@ -1,0 +1,80 @@
+version: '3.8'
+
+services:
+  # Neon Local Proxy Service
+  neon-local:
+    image: neondatabase/neon_local:latest
+    container_name: neon-local-proxy
+    ports:
+      - "4444:4444"   # HTTP/WebSocket (serverless driver 用)
+      - "5432:5432"   # Postgres TCP
+    env_file:
+      - .env.development.local
+    healthcheck:
+      # ⚠️ 請把 neondb_owner 改成你 log 裡的 user
+      test: ["CMD-SHELL", "pg_isready -h localhost -p 5432 -U neondb_owner || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # Application Service
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    ports:
+      - "3000:3000"
+    env_file:
+    - .env.development.local
+    environment:
+      DATABASE_URL: postgresql://neondb_owner:npg_zg3GO8dFmxhb@ep-billowing-lake-ad0ndp5s-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
+      NODE_ENV: development
+      PORT: 3000
+      LOG_LEVEL: debug
+      DB_POOL_MIN: 2
+      DB_POOL_MAX: 10
+      DB_POOL_IDLE_TIMEOUT: 30000
+      DB_LOG_QUERIES: true
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      neon-local:
+        condition: service_healthy
+    networks:
+      - app-network
+    restart: unless-stopped
+    healthcheck:
+      # 改檢查 /health，不要直接打根路由
+      test: ["CMD-SHELL", "wget --spider -q http://localhost:3000/health || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 60s   # 延後一分鐘再開始檢查，避免 Node 啟動慢
+
+  # Optional: Redis for caching/sessions
+  redis:
+    image: redis:7-alpine
+    container_name: redis-dev
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  node_modules:

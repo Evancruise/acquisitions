@@ -1,0 +1,98 @@
+version: '3.8'
+
+services:
+  # Application Service - Production
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: app-prod
+    ports:
+      - "3000:3000"
+    environment:
+      # Production environment variables
+      # In real production, these should be injected via CI/CD or orchestration platform
+      DATABASE_URL: ${DATABASE_URL}  # Neon Cloud Database URL
+      NODE_ENV: production
+      PORT: 3000
+      LOG_LEVEL: info
+      DB_POOL_MIN: 0
+      DB_POOL_MAX: 20
+      DB_POOL_IDLE_TIMEOUT: 10000
+      DB_LOG_QUERIES: false
+      ENABLE_CORS: false
+      HEALTH_CHECK_TIMEOUT: 5000
+      # Security secrets (should be injected securely in production)
+      JWT_SECRET: ${JWT_SECRET}
+      SESSION_SECRET: ${SESSION_SECRET}
+    networks:
+      - app-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+
+  # Optional: Nginx Reverse Proxy for Production
+  nginx:
+    image: nginx:alpine
+    container_name: nginx-prod
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/ssl:ro
+    depends_on:
+      app:
+        condition: service_healthy
+    networks:
+      - app-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Optional: Redis for Production (if needed)
+  redis:
+    image: redis:7-alpine
+    container_name: redis-prod
+    volumes:
+      - redis_data:/data
+      - ./redis/redis.conf:/etc/redis/redis.conf:ro
+    networks:
+      - app-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.1'
+        reservations:
+          memory: 64M
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  redis_data:
