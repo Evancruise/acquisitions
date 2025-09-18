@@ -6,6 +6,7 @@
   "type": "module",
   "imports": {
     "#config/*": "./src/config/*",
+    "#tests/*": "./src/tests/*",
     "#controllers/*": "./src/controllers/*",
     "#middleware/*": "./src/middleware/*",
     "#models/*": "./src/models/*",
@@ -16,8 +17,6 @@
   },
   "scripts": {
     "dev": "node --watch src/index.js",
-    "dev:test:neon": "node src/tests/neon.test.js",
-    "dev:test:jwt": "node src/tests/jwt.test.js",
     "dev:docker": "node scripts/dev.js",
     "prod:docker": "node scripts/prod.js",
     "node": "node src/index.js",
