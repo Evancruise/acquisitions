@@ -6,7 +6,6 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import authRoutes from '#routes/auth.route.js'; // ✅ 引入 authRoutes
 import usersRoutes from '#routes/users.route.js';
-import testRoutes from '#tests/jwt.test.js';
 // import securityMiddleWare from '#middleware/security.middleware.js';
 import dotenv from "dotenv";
 dotenv.config();
@@ -32,12 +31,11 @@ app.get('/health', (req, res) => {
 });
 
 app.get('/api', (req, res) => {
-    res.status(200).json({ messaage: 'Acquisitions API is running!' });
+    res.status(200).json({ message: 'Acquisitions API is running!' });
 });
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', usersRoutes);
-app.use('/api/test', testRoutes);
 
 app.use((req, res) => {
     res.status(404).json({ error: 'Route not found' });
