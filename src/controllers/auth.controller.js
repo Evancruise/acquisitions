@@ -1,9 +1,15 @@
 import { formatValidationError } from "#utils/format.js";
-import { createUser, findUserByEmail } from "#services/auth.service.js";
+import { createUser, findUserByEmail, createUsersTable } from "#services/auth.service.js";
 import { signupSchema, signinSchema } from "#validations/auth.validation.js";
 import bcrypt from 'bcrypt';
 import jwt from "jsonwebtoken";
 import logger from '#config/logger.js';
+
+export const initUserTable = async (req, res) => {
+    createUsersTable();
+    logger.info("✅ Init user table");
+    res.status(200).json({ message: "Init user table successfully" });
+}
 
 // ✅ 註冊
 export const signup = async (req, res, next) => {
@@ -25,16 +31,22 @@ export const signup = async (req, res, next) => {
     const user = await createUser({ name, email, password, role });
     console.log("name, email, password, role:", name, email, password, role);
 
+    logger.info(`Signing with: ${process.env.JWT_SECRET}`);
+
     const token = jwt.sign(
       { id: user.id, email: user.email, role: user.role },
       process.env.JWT_SECRET,
-      { expiresIn: "1h" }
+      { expiresIn: process.env.JWT_EXPIRES_IN },
     );
+
+    logger.info(`token: ${token}`);
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      // secure: process.env.NODE_ENV === "development",
+      secure: true,    // 建議上線時開啟
       sameSite: "strict",
+      path: "/",
     });
 
     logger.info(`✅ User registered: ${email}`);
@@ -81,16 +93,22 @@ export const signin = async (req, res, next) => {
       return res.status(401).json({ error: "Invalid credentials" });
     }
 
+    logger.info(`Signing with: ${process.env.JWT_SECRET}`);
+
+    logger.info(`SIGN secret length: ${process.env.JWT_SECRET.length}`);
+    logger.info(`SIGN secret hex: ${Buffer.from(process.env.JWT_SECRET).toString("hex")}`);
+
     const token = jwt.sign(
       { id: user.id, email: user.email, role: user.role },
       process.env.JWT_SECRET,
-      { expiresIn: "1h" }
+      { expiresIn: process.env.JWT_EXPIRES_IN },
     );
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: true,    // 建議上線時開啟
       sameSite: "strict",
+      path: '/',
     });
 
     logger.info(`✅ User logged in: ${email}`);
@@ -113,6 +131,8 @@ export const signin = async (req, res, next) => {
 // ✅ 登出
 export const signout = (req, res) => {
   res.clearCookie("token");
+  res.clearCookie("Path");
+  res.clearCookie("SameSite");
   logger.info("✅ User signed out");
   res.status(200).json({ message: "Logged out successfully" });
 };
