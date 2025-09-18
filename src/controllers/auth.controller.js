@@ -1,15 +1,21 @@
 import { formatValidationError } from "#utils/format.js";
-import { createUser, findUserByEmail, createUsersTable } from "#services/auth.service.js";
+import { createUser, findUserByEmail, createUsersTable, deleteTable } from "#services/auth.service.js";
 import { signupSchema, signinSchema } from "#validations/auth.validation.js";
 import bcrypt from 'bcrypt';
 import jwt from "jsonwebtoken";
 import logger from '#config/logger.js';
 
+export const deleteUserTable = async (req, res) => {
+    deleteTable();
+    logger.info("✅ Delete user table");
+    res.status(200).json({ message: "Delete user table successfully" });
+};
+
 export const initUserTable = async (req, res) => {
     createUsersTable();
     logger.info("✅ Init user table");
     res.status(200).json({ message: "Init user table successfully" });
-}
+};
 
 // ✅ 註冊
 export const signup = async (req, res, next) => {

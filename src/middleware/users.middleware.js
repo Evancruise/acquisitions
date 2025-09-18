@@ -75,10 +75,12 @@ export const authenticateToken = (req, res, next) => {
 
 export const authorizeRoles = (...roles) => {
   return (req, res, next) => {
-    logger.info(`req.user.role=${req.user.role}`);
+    logger.info(`User role in token: ${req.user?.role}, Required roles: ${roles}`);
+
     if (!req.user || !roles.includes(req.user.role)) {
       return res.status(403).json({ error: "Forbidden: insufficient role" });
     }
+
     next();
   };
 };

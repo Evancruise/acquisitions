@@ -1,6 +1,42 @@
 import bcrypt from "bcrypt";
 import { sql } from "#config/database.js";
 
+export const deleteTable = async() => {
+  try {
+    console.log("🔍 刪除 users 資料表中...");
+    await sql`DROP TABLE users`;
+
+    console.log("✅ 刪除 users 資料表完成");
+  } catch (e) {
+    console.error("❌ 刪除 users 資料表失敗:", e);
+    throw e;
+  }
+};
+
+// ✅ 建立 users 資料表
+export const createUsersTable = async () => {
+  try {
+    console.log("🔍 建立 users 資料表中...");
+
+    await sql`
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(100) NOT NULL,
+        email VARCHAR(255) UNIQUE NOT NULL,
+        password TEXT NOT NULL,
+        role VARCHAR(50) DEFAULT 'user',
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      )
+    `;
+
+    console.log("✅ users 資料表建立完成");
+  } catch (e) {
+    console.error("❌ 建立 users 資料表失敗:", e);
+    throw e;
+  }
+};
+
 // ✅ 建立新使用者
 export const createUser = async ({ name, email, password, role = "user" }) => {
   try {

@@ -1,5 +1,5 @@
 import logger from "#config/logger.js";
-import { getUserById, updateUser, deleteUser, getAllUsers } from "#services/users.services.js";
+import { getUserById, updateUser, deleteUser, getAllUsers } from "#services/users.service.js";
 import { userIdSchema, updateUserSchema } from "#validations/users.validation.js";
 
 /*
