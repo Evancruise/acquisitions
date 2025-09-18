@@ -26,7 +26,7 @@ export const getUserByIdController = async (req, res) => {
 Update user
 */
 export const updateUserController = async (req, res) => {
-    
+    try {
         logger.info("req.params:", req.params);
         const { id } = userIdSchema.parse({ id: req.params.id });
         logger.info("req.body:", req.body);
@@ -45,6 +45,8 @@ export const updateUserController = async (req, res) => {
 
         // Only admin can change role
         logger.info("Validate role...");
+        logger.info(`updates.role=${updates.role}, req.user.role=${req.user.role}`);
+
         if (updates.role && req.user.role !== "admin") {
             return res.status(403).json({ error: "Only admins can change roles" });
         }
@@ -54,8 +56,14 @@ export const updateUserController = async (req, res) => {
         const updated = await updateUser(id, updates);
         
         logger.info(`User ${id} updated by ${req.user.email}`);
-        res.json(updated);
-    
+        res.status(200).json({
+            message: "User updated successfully",
+            updated: updated
+        });
+    } catch(e) {
+        logger.error("Error in UpdateUserController", e);
+        res.status(404).json({ error: e.message });
+    }
 };
 
 /*

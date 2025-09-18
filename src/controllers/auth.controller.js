@@ -25,6 +25,8 @@ export const signup = async (req, res, next) => {
 
     const validationResult = signupSchema.safeParse(req.body);
 
+    logger.info("validationResult = ", validationResult);
+
     if (!validationResult.success) {
       return res.status(400).json({
         error: "Validation failed",

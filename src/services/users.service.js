@@ -46,6 +46,8 @@ export const updateUser = async (id, updates) => {
 
   if (setClauses.length === 0) return existing;
 
+  logger.info("applying update sql command");
+  
   const updated = await sql`UPDATE users
   SET name = ${updates.name}, email = ${updates.email}, role = ${updates.role}, password = ${updates.password}, updated_at = NOW()
   WHERE id = ${id}
@@ -56,6 +58,7 @@ export const updateUser = async (id, updates) => {
     throw new Error(`Update failed: user ${id} not found`);
   }
 
+  logger.info("Updated users Successfully");
   return updated[0];
 };
 
