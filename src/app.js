@@ -6,8 +6,17 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import authRoutes from '#routes/auth.route.js'; // ✅ 引入 authRoutes
 import usersRoutes from '#routes/users.route.js';
+import bodyParser from "body-parser";
+import expressLayouts from "express-ejs-layouts";
+
 // import securityMiddleWare from '#middleware/security.middleware.js';
 import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 dotenv.config();
 
 const app = express();
@@ -17,13 +26,25 @@ app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(morgan('combined', { stream: { write: (message) => logger.info(message.trim())}}))
+app.use(morgan('combined', { stream: { write: (message) => logger.info(message.trim())}}));
+app.set("view engine", "ejs");
 // app.use(securityMiddleWare);
+app.use(express.static(path.join(__dirname, "../public")));
+app.use("/bootstrap", express.static(path.join(process.cwd(), "node_modules/bootstrap/dist")));
+
+app.use('/static', express.static('node_modules/bootstrap/dist'));
+app.use("/static", express.static("public"));
+
+app.set("views", path.join(__dirname, "views"));
+
+app.use(expressLayouts);
+app.set("layout", "layout"); // 預設母版 base.ejs
 
 app.get('/', (req, res) => {
     console.log("Hello from Acquisitions!");
     logger.info("Hello from Acquisitions!");    
-    res.status(200).send('Hello from Acquisitions');
+    // res.status(200).send('Hello from Acquisitions');
+    res.render("loginPage"); // render views/loginPage.ejs
 });
 
 app.get('/health', (req, res) => {

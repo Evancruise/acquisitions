@@ -18,6 +18,10 @@ export const initUserTable = async (req, res) => {
 };
 
 // ✅ 註冊
+export const register = async (req, res) => {
+    res.render("register", { layout: false });
+};
+
 export const signup = async (req, res, next) => {
   try {
 
@@ -29,6 +33,7 @@ export const signup = async (req, res, next) => {
 
     if (!validationResult.success) {
       return res.status(400).json({
+        success: false,
         error: "Validation failed",
         details: validationResult.error.format(),
       });
@@ -60,6 +65,7 @@ export const signup = async (req, res, next) => {
     logger.info(`✅ User registered: ${email}`);
 
     return res.status(201).json({
+      success: true,
       message: "User registered successfully",
       user: {
         id: user.id,
@@ -69,17 +75,20 @@ export const signup = async (req, res, next) => {
       },
     });
   } catch (e) {
-    logger.error("Signup error", e);
-    if (/user.*exist/i.test(e.message)) {
-      return res.status(409).json({ error: "Email already exists" });
-    }
-    next(e);
+    logger.error("Signup error:", e);
+    return res.status(409).json({ error: "Email already exists" });
   }
 };
 
 // ✅ 登入
+export const loginPage = async(req, res) => {
+    res.render("loginPage", { layout: false });
+}
+
 export const signin = async (req, res, next) => {
-  try {
+  // try {
+
+    logger.info(`req.body: ${JSON.stringify(req.body)}`);
     const validationResult = signinSchema.safeParse(req.body);
 
     if (!validationResult.success) {
@@ -107,7 +116,7 @@ export const signin = async (req, res, next) => {
     logger.info(`SIGN secret hex: ${Buffer.from(process.env.JWT_SECRET).toString("hex")}`);
 
     const token = jwt.sign(
-      { id: user.id, email: user.email, role: user.role },
+      { id: user.id, name: user.name, email: user.email, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN },
     );
@@ -130,10 +139,10 @@ export const signin = async (req, res, next) => {
         role: user.role,
       },
     });
-  } catch (e) {
-    logger.error("Signin error", e);
-    next(e);
-  }
+  //} catch (e) {
+  //  logger.error("Signin error", e);
+  //  next(e);
+  //}
 };
 
 // ✅ 登出
@@ -142,5 +151,23 @@ export const signout = (req, res) => {
   res.clearCookie("Path");
   res.clearCookie("SameSite");
   logger.info("✅ User signed out");
-  res.status(200).json({ message: "Logged out successfully" });
+  res.status(200).render("loginPage", { layout: false, message: "Logged out successfully" });
+};
+
+// dashboard 首頁
+export const dashboard = (req, res) => {
+  try {
+    const token = req.cookies.token;  // 從 cookie 拿 token
+    if (!token) {
+      return res.redirect("/api/auth/loginPage"); // 沒有 token 回登入頁
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    logger.info(`decoded.name: ${decoded.name}`);
+
+    res.render("dashboard", { name: decoded.name, path: "/api/auth/dashboard", priority: 1, layout: "layout" });
+  } catch (err) {
+    console.error("JWT 驗證失敗:", err);
+    return res.redirect("/api/auth/loginPage");
+  }
 };

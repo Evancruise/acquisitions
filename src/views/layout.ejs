@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <title> 醫快拍 </title>
+    <link rel="stylesheet" href="/css/table.css">
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/modal.css">
+    <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+</head>
+<body>
+    <!-- 側邊選單 -->
+    <div class="sidebar">
+    <div class="user-info">
+        <p>臺大醫院影像醫學部</p>
+        <img src="/static/images/logo.png" alt="icon" class="user-icon">
+    </div>
+    <ul class="menu">
+        <li>
+        <a class="nav-link <%= (path === '/api/auth/dashboard') ? 'active' : '' %>" href="/api/auth/dashboard">
+            <i class="fas fa-home"></i> 首頁
+        </a>
+        </li>
+        <li>
+        <a class="nav-link <%= (path === '/api/auth/record') ? 'active' : '' %>" href="/api/auth/record">
+            <i class="fa-regular fa-user"></i> 個人病歷紀錄
+        </a>
+        </li>
+        <li>
+        <a class="nav-link <%= (path === '/api/auth/all_records') ? 'active' : '' %>"
+            style="display: <%= (priority === 1) ? 'flex' : 'none' %>"
+            href="/api/auth/all_records">
+            <i class="fa-duotone fa-thin fa-calendar"></i> 所有病歷紀錄
+        </a>
+        </li>
+        <li>
+        <a class="nav-link <%= (path === '/api/auth/all_account') ? 'active' : '' %>"
+            style="display: <%= (priority === 1) ? 'flex' : 'none' %>"
+            href="/api/auth/all_account">
+            <i class="fas fa-history"></i> 帳號管理
+        </a>
+        </li>
+        <li>
+        <a class="nav-link <%= (path === '/api/auth/recyle_bin') ? 'active' : '' %>" href="/api/auth/recyle_bin">
+            <i class="fas fa-trash"></i> 垃圾桶
+        </a>
+        </li>
+        <li>
+        <a class="nav-link <%= (path === '/api/auth/changepwd') ? 'active' : '' %>" href="/api/auth/changepwd">
+            <i class="fas fa-key"></i> 快速密碼變更
+        </a>
+        </li>
+        <li>
+        <a class="nav-link <%= (path === '/api/auth/rebind-page') ? 'active' : '' %>" href="/api/auth/rebind-page">
+            <i class="fas fa-link"></i> 重新綁定
+        </a>
+        </li>
+        <li>
+        <a class="nav-link" href="/api/auth/sign-out">
+            <i class="fas fa-sign-out-alt"></i> 登出
+        </a>
+        </li>
+    </ul>
+    <div class="version">ver 1.0</div>
+    </div>
+
+    <!-- 主內容區 -->
+    <main>
+        <%- body %>
+    </main>
+
+    <div id="modal-container"></div>
+    <div id="modal-container-loading"></div>
+    <div id="modal-container-2"></div>
+
+    <script src="/static/js/bootstrap.bundle.min.js"></script>
+</body>
