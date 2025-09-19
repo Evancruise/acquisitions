@@ -11,6 +11,14 @@ export const userIdSchema = z
   }); // ✅ 允許其他 key 存在
 
 /*
+Validate idUser params
+*/
+export const nameUserSchema = z
+  .object({
+    name: z.string().min(2).max(100)
+  }); // ✅ 允許其他 key 存在
+
+/*
 Validate update user body
 */
 export const updateUserSchema = z.object({

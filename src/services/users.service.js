@@ -12,6 +12,23 @@ export const getUserById = async (id) => {
 };
 
 /*
+Get ID by User
+*/
+export const getIdByUser = async (fieldname, value) => {
+    logger.info(`Search for ${fieldname}=${value}`);
+    let result;
+    if (fieldname == "name") {
+      result = await sql`SELECT id FROM users WHERE name = ${value}`;
+    }
+
+    if (fieldname == "email") {
+      result = await sql`SELECT id FROM users WHERE email = ${value}`;
+    }
+
+    return result[0] || null;
+};
+
+/*
 Update user
 */
 export const updateUser = async (id, updates) => {

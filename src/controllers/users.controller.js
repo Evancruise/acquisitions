@@ -1,6 +1,6 @@
 import logger from "#config/logger.js";
-import { getUserById, updateUser, deleteUser, getAllUsers } from "#services/users.service.js";
-import { userIdSchema, updateUserSchema } from "#validations/users.validation.js";
+import { getUserById, getIdByUser, updateUser, deleteUser, getAllUsers } from "#services/users.service.js";
+import { userIdSchema, nameUserSchema, updateUserSchema } from "#validations/users.validation.js";
 
 /*
 Get user by ID
@@ -18,6 +18,26 @@ export const getUserByIdController = async (req, res) => {
         res.json(user);
     } catch(e) {
         logger.error("Error in getUserById", e);
+        res.status(404).json({ error: e.message });
+    }
+};
+
+/*
+Get ID by user
+*/
+export const getIdByUserController = async (req, res) => {
+    try {
+        const { name } = nameUserSchema.parse({ name: req.params.name });
+
+        const user = await getIdByUser("name", name);
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        logger.info(`Fetched user ${id}`);
+        res.json(user);
+    } catch(e) {
+        logger.error("Error in getIdByUser", e);
         res.status(404).json({ error: e.message });
     }
 };

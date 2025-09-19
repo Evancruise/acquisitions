@@ -24,7 +24,7 @@ if (form) {
         console.log(data);
     
         if (!data.success) {
-            showModal(`註冊失敗:${data.error}`);
+            showModal(`註冊失敗: ${data.message}`);
             return;
         }
 

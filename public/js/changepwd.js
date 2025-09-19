@@ -1,7 +1,7 @@
 import { loadModal, showModal } from "./modal.js";
 
 loadModal("modal-container");
-const form = document.getElementById("login_form");
+const form = document.getElementById("changepwd_form");
 
 if (form) {
     form.addEventListener("submit", async (e) => {
@@ -10,8 +10,7 @@ if (form) {
         const formData = new FormData(form);
         const body = Object.fromEntries(formData.entries());
 
-        try {
-            const res = await fetch("/api/auth/sign-in", {
+            const res = await fetch("/api/auth/verify_changepwd", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(body),
@@ -20,13 +19,15 @@ if (form) {
             const data = await res.json();
 
             if (!data.success) {
-                showModal(`登入失敗: ${data.message}`);
+                showModal(`更改密碼失敗: ${data.message}`);
                 return;
             }
 
-            window.location.href = "/api/auth/dashboard"; // 如何引入data.user.name
-        } catch (err) {
-            showModal("伺服器錯誤", "請稍後再試");
-        }
+            showModal("更改密碼成功！請重新登入", () => {
+                window.location.href = "/api/auth/loginPage";
+            }, () => {
+                window.location.href = "/api/auth/loginPage";
+            });
+            
     });
 }
