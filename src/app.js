@@ -38,13 +38,10 @@ app.use("/static", express.static("public"));
 app.set("views", path.join(__dirname, "views"));
 
 app.use(expressLayouts);
-app.set("layout", "layout"); // 預設母版 base.ejs
+app.set("layout", "layout"); // 預設母版 layout.ejs
 
 app.get('/', (req, res) => {
-    console.log("Hello from Acquisitions!");
-    logger.info("Hello from Acquisitions!");    
-    // res.status(200).send('Hello from Acquisitions');
-    res.render("loginPage"); // render views/loginPage.ejs
+    res.render("loginPage", { layout: false }); // render views/loginPage.ejs
 });
 
 app.get('/health', (req, res) => {
