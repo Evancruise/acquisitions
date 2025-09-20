@@ -1,13 +1,23 @@
 import { formatValidationError } from "#utils/format.js";
-import { createUser, findUserByEmail, createUsersTable, deleteTable } from "#services/auth.service.js";
+import { createUser, 
+         createUsersTable, 
+         removeUserTable, 
+         createRegister, 
+         createRegisterTable, 
+         removeRegisterTable, 
+         findUserByEmail, 
+         findRegister } from "#services/auth.service.js";
 import { signupSchema, signinSchema } from "#validations/auth.validation.js";
 import bcrypt from 'bcrypt';
 import jwt from "jsonwebtoken";
 import logger from '#config/logger.js';
-import { getIdByUser, updateUser } from "#src/services/users.service.js";
+import { getIdByUser, updateUser, updateRegister, updateUserTableFromRegister } from "#src/services/users.service.js";
+import sgMail from "@sendgrid/mail";
+
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 export const deleteUserTable = async (req, res) => {
-    deleteTable();
+    removeUserTable();
     logger.info("✅ Delete user table");
     res.status(200).json({ message: "Delete user table successfully" });
 };
@@ -18,7 +28,109 @@ export const initUserTable = async (req, res) => {
     res.status(200).json({ message: "Init user table successfully" });
 };
 
+export const deleteRegisterTable = async (req, res) => {
+    removeRegisterTable();
+    logger.info("✅ Delete register table");
+    res.status(200).json({ message: "Delete register table successfully" });
+};
+
+export const initRegisterTable = async (req, res) => {
+    createRegisterTable();
+    logger.info("✅ Init register table");
+    res.status(200).json({ message: "Init register table successfully" });
+};
+
+function generateSecureSixDigitCode() {
+  const array = new Uint32Array(1);
+  crypto.getRandomValues(array);
+  return (array[0] % 1000000).toString().padStart(6, "0");
+}
+
 // ✅ 註冊
+export const request = async (req, res) => {
+
+  try {
+    const { name, email } = req.body;
+
+    const token = jwt.sign({ email, name }, 
+        process.env.JWT_SECRET,
+       { expiresIn: "1h" });
+    
+    logger.info(`createRegister: name: ${name} email: ${email}`);
+    const register = await createRegister({ name, email });
+    logger.info(`register: ${JSON.stringify(register)}`);
+
+    // 寄信
+    const code = generateSecureSixDigitCode();
+    const code_hash = await bcrypt.hash(code, 10);
+
+    logger.info(`process.env.SENDGRID_API_KEY=${process.env.SENDGRID_API_KEY}`);
+    
+    await sgMail.send({
+      from: process.env.MAIL_FROM,
+      to: email,
+      subject: "Verify email from Oral cancer template",
+      html: `<p>Your Oral cancer app verification code is ${code}</p>`,
+    });
+
+    logger.info(`code: ${code}`);
+
+    return res.status(201).json({ success: true, layout: false, message: "Verification email sent", redirect: `/api/auth/verify?name=${name}&email=${email}&code_hash=${code_hash}&token=${token}` });
+  } catch (err) {
+    return res.status(401).json({ success: false, message: err.message });
+  }    
+}
+
+// 驗證註冊流程
+export const verify = async(req, res) => {
+    return res.status(201).render("verify", { layout: false, name: req.query.name, email: req.query.email, code_hash: req.query.code_hash, token: req.query.token });
+}
+
+export const verify_register = async (req, res) => {
+    try {
+        const token = req.body.token;
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+        logger.info(`decoded: ${JSON.stringify(decoded)}`);
+
+        if (req.body.email !== decoded.email) {
+          return res.status(401).json({ success: true, message: "Wrong email" });
+        }
+
+        const name = decoded.name;
+        const email = decoded.email;
+        const register = await findRegister({ email });
+
+        logger.info(`register: ${JSON.stringify(register)}`);
+
+        const id = register.id;
+        let updated = null;
+        const validCode = await bcrypt.compare(req.body.code, req.body.code_hash);
+
+        if (!validCode) {
+              return res.status(401).json({ 
+              success: false,
+              error: "Invalid credentials",
+              message: "Code not correct",
+          });
+        }
+
+        if (register && register.status == "pending") {
+            // check code verification
+            // req.body.code
+            // update status into user database
+            register.status = "complete";
+            updated = updateRegister(id, register);
+            updateUserTableFromRegister(id, name);
+        }
+
+        return res.status(200).json({ success: true, message: "Verify register complete", redirect: `/api/auth/changepwd?name=${name}&email=${email}` });
+    } catch (err) {
+        logger.error("verify_register error:", err);
+        return res.status(401).json({ success: false, message: err.message });
+    }
+};
+
 export const register = async (req, res) => {
     res.render("register", { layout: false });
 };
@@ -113,7 +225,12 @@ export const signin = async (req, res, next) => {
 
     const { name, email, password } = validationResult.data;
 
+    logger.info(`email: ${email}`);
+
     const user = await findUserByEmail(email);
+
+    logger.info(`User: ${user}`);
+
     if (!user) {
       return res.status(401).json({ success: false, error: "Invalid credentials", message: "User not found" });
     }
@@ -198,7 +315,8 @@ export const dashboard = (req, res) => {
 };
 
 export const changepwd = (req, res) => {
-  return res.status(200).render("changepwd", { layout: false });
+  logger.info(`body: ${JSON.stringify(req.query)}`);
+  return res.status(200).render("changepwd", { layout: false, name: req.query.name, email: req.query.email });
 };
 
 export const verify_changepwd = async (req, res) => {
@@ -218,6 +336,8 @@ export const verify_changepwd = async (req, res) => {
         message: "User not found",
     });
   }
+
+  const id = userIdByEmail.id;
 
   if (userIdByEmail.id !== userIdByName.id) {
     return res.status(400).json({

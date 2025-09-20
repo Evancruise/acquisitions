@@ -59,6 +59,7 @@
     "zod": "^4.1.8"
   },
   "devDependencies": {
+    "@sendgrid/mail": "^8.1.6",
     "body-parser": "^2.2.0",
     "bootstrap": "^5.3.8",
     "drizzle-kit": "^0.31.0",

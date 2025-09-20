@@ -2,7 +2,7 @@ import { loadModal, showModal } from "./modal.js";
 
 loadModal('modal-container');
 
-const form = document.getElementById("request_form");
+const form = document.getElementById("verify_form");
 
 console.log("form:", form);
 
@@ -14,7 +14,7 @@ if (form) {
         const body = Object.fromEntries(formData.entries());
         console.log("body:", JSON.stringify(body));
 
-        const res = await fetch("/api/auth/request", {
+        const res = await fetch("/api/auth/verify_register", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(body),
@@ -24,16 +24,18 @@ if (form) {
         console.log(data);
     
         if (!data.success) {
-            showModal(`註冊失敗: ${data.message}`);
+            showModal(`驗證失敗: ${data.message}`);
             return;
         }
 
-        showModal("信箱寄出成功，請查收", () => {
+        showModal("驗證信箱成功，請重新設定密碼", () => {
             setTimeout(() => {
-                window.location.href = data.redirect; // 怎麼引入 data.name?
+                window.location.href = data.redirect;
             }, 1500);
         }, () => {
-
+            setTimeout(() => {
+                window.location.href = data.redirect;
+            }, 1500);
         });
     });
 }

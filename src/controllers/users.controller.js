@@ -1,5 +1,5 @@
 import logger from "#config/logger.js";
-import { getUserById, getIdByUser, updateUser, deleteUser, getAllUsers } from "#services/users.service.js";
+import { getUserById, getIdByUser, updateUser, deleteUser, getAllUsers, getAllRegisters } from "#services/users.service.js";
 import { userIdSchema, nameUserSchema, updateUserSchema } from "#validations/users.validation.js";
 
 /*
@@ -109,9 +109,12 @@ export const deleteUserController = async (req, res) => {
     }
 };
 
+/*
+Acquire users table
+*/
 export const fetchAllUsers = async (req, res, next) => {
     try {
-        logger.info('Getting users...');
+        logger.info('Getting users table...');
 
         const allUsers = await getAllUsers();
 
@@ -125,4 +128,24 @@ export const fetchAllUsers = async (req, res, next) => {
         logger.error(e);
         next(e);
     }
-}
+};
+
+/*
+Acquire registers table
+*/
+export const fetchAllRegisters = async (req, res, next) => {
+    try {
+        logger.info('Getting registers table...');
+
+        const allRegisters = await getAllRegisters();
+
+        res.json({
+            message: 'Successfully retrieved registers',
+            users: allRegisters,
+            count: allRegisters.length,
+        });
+    } catch(e) {
+        logger.error(e);
+        next(e);
+    }
+};

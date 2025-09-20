@@ -14,10 +14,10 @@
             <h2>重設密碼</h2>
             <form method="POST" action="/api/auth/verify_changepwd" id="changepwd_form">
                 <label for="name">使用者姓名：</label>
-                <input type="text" id="name" name="name" required>
+                <input type="text" id="name" name="name" value="<%= name %>">
 
                 <label for="email">帳號 (Email)：</label>
-                <input type="text" id="email" name="email" required>
+                <input type="text" id="email" name="email" value="<%= email %>">
 
                 <label for="new_password">新密碼：</label>
                 <input type="password" id="new_password" name="new_password" required>
@@ -28,7 +28,7 @@
                 <button type="submit" class="btn-submit">變更密碼</button>
             </form>
 
-            <a href="/api/auth/loginPage" class="btn">回上一頁</a>
+            <a href="/api/auth/loginPage" class="btn">回登入首頁</a>
         </div>
     </div>
 
