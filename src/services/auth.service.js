@@ -60,7 +60,7 @@ export const createUser = async ({ name, email, password, role = "user" }) => {
     const newUser = await sql`
       INSERT INTO users (name, email, password, role)
       VALUES (${name}, ${email}, ${password_hash}, ${role})
-      RETURNING id, name, email, role, created_at
+      RETURNING id, name, email, password, role, created_at
     `;
 
     console.log("✅ Step 3 完成:", newUser[0]);

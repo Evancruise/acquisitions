@@ -4,7 +4,7 @@ import { signupSchema, signinSchema } from "#validations/auth.validation.js";
 import bcrypt from 'bcrypt';
 import jwt from "jsonwebtoken";
 import logger from '#config/logger.js';
-import { getIdByUser } from "#src/services/users.service.js";
+import { getIdByUser, updateUser } from "#src/services/users.service.js";
 
 export const deleteUserTable = async (req, res) => {
     deleteTable();
@@ -59,7 +59,7 @@ export const signup = async (req, res, next) => {
     logger.info(`Signing with: ${process.env.JWT_SECRET}`);
 
     const token = jwt.sign(
-      { id: user.id, email: user.email, role: user.role },
+      { id: user.id, email: user.email, password: user.password, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN },
     );
@@ -83,6 +83,7 @@ export const signup = async (req, res, next) => {
         id: user.id,
         name: user.name,
         email: user.email,
+        password: user.passowrd,
         role: user.role,
       },
     });
@@ -125,6 +126,9 @@ export const signin = async (req, res, next) => {
       return res.status(401).json({ success: false, error: "Invalid credentials", message: "Wrong email" });
     }
 
+    logger.info(`password: ${password}`);
+    logger.info(`user.password: ${user.password}`);
+
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) {
       return res.status(401).json({ success: false, error: "Invalid credentials", message: "Wrong password" });
@@ -136,7 +140,7 @@ export const signin = async (req, res, next) => {
     logger.info(`SIGN secret hex: ${Buffer.from(process.env.JWT_SECRET).toString("hex")}`);
 
     const token = jwt.sign(
-      { id: user.id, name: user.name, email: user.email, role: user.role },
+      { id: user.id, name: user.name, email: user.email, password: user.password, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN },
     );
@@ -223,13 +227,15 @@ export const verify_changepwd = async (req, res) => {
     });
   }
 
-  if (req.body.new_password !== req.body.new_password_2) {
+  if (req.body.new_password !== req.body.password) {
     return res.status(401).json({ 
         success: false,
         error: "Invalid credentials",
         message: "Password not the same",
     });
   }
+
+  const updated = updateUser(id, req.body);
 
   return res.status(200).json({ success: true, layout: false, message: "Verify changepwd success!" });
 };
@@ -241,9 +247,69 @@ export const quickchangepwd = (req, res) => {
       return res.redirect("/api/auth/loginPage"); // 沒有 token 回登入頁
     }
 
-    return res.status(200).json({ layout: false });
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    return res.status(200).render(
+        "quick_changepwd", { 
+            path: "/api/auth/quick_changepwd", 
+            priority: 1, 
+            layout: "layout", 
+            name: decoded.name,
+            email: decoded.email });
   } catch (err) {
     console.error("JWT 驗證失敗:", err);
     return res.redirect("/api/auth/loginPage");
+  }
+};
+
+export const verify_quick_changepwd = async (req, res) => {
+  try {
+    const user = await getIdByUser("name", req.body.name);
+    const id = user.id;
+
+    const token = req.cookies.token;  // 從 cookie 拿 token
+    if (!token) {
+      return res.redirect("/api/auth/loginPage"); // 沒有 token 回登入頁
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    logger.info(`req.body: ${JSON.stringify(req.body)}`);
+    logger.info(`decoded: ${JSON.stringify(decoded)}`);
+
+    const validPassword = await bcrypt.compare(req.body.old_password, decoded.password);
+
+    if (!validPassword) {
+      return res.status(401).json({ 
+          success: false,
+          error: "Invalid credentials",
+          message: "Password not correct",
+      });
+    }
+
+    if (req.body.password !== req.body.new_password) {
+      return res.status(401).json({ 
+          success: false,
+          error: "Invalid credentials",
+          message: "New password not the same",
+      });
+    }
+
+    const updated = updateUser(id, req.body);
+
+    return res.status(200).json({ 
+        success: true, 
+        layout: "layout", 
+        path: "/api/auth/quick_changepwd", 
+        message: "Verify changepwd success!" 
+    });
+  } catch (err) {
+    return res.status(400).json({
+        success: false, 
+        layout: "layout",
+        path: "/api/auth/quick_changepwd",
+        error: "Validation failed",
+        message: "User id not the same (by name/email)",
+    });
   }
 };

@@ -55,10 +55,14 @@ export const updateUser = async (id, updates) => {
     updates.role = existing.role;
   }
 
+  let password_hash = null;
   if (updates.password) {
-    setClauses.push(`password = ${updates.password}`);
+    password_hash = await bcrypt.hash(updates.password, 10);
+    updates.password = password_hash;
+    setClauses.push(`password = ${password_hash}`);
   } else {
-    updates.password = existing.password;
+    password_hash = await bcrypt.hash(existing.password, 10);
+    updates.password = password_hash;
   }
 
   if (setClauses.length === 0) return existing;
@@ -68,7 +72,7 @@ export const updateUser = async (id, updates) => {
   const updated = await sql`UPDATE users
   SET name = ${updates.name}, email = ${updates.email}, role = ${updates.role}, password = ${updates.password}, updated_at = NOW()
   WHERE id = ${id}
-  RETURNING id, name, email, role, created_at, updated_at
+  RETURNING id, name, email, role, password, created_at, updated_at
   `;
 
   if (updated.length === 0) {
@@ -101,6 +105,7 @@ export const getAllUsers = async () => {
             email,
             name,
             role,
+            password,
             created_at,
             updated_at
           FROM users
