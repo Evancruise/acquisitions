@@ -24,14 +24,18 @@ if (form) {
         console.log(data);
     
         if (!data.success) {
-            showModal(`註冊失敗: ${data.message}`);
+            showModal(`註冊失敗:${data.error}`);
             return;
         }
 
-        showModal("註冊成功！請重新登入", () => {
-            window.location.href = "/api/auth/loginPage";
+        showModal("註冊成功！請設定密碼", () => {
+            setTimeout(() => {
+                window.location.href = "/api/auth/loginPage";
+            }, 1500);
         }, () => {
-            window.location.href = "/api/auth/loginPage";
+            setTimeout(() => {
+                window.location.href = "/api/auth/changepwd";
+            }, 1500);
         });
     });
 }

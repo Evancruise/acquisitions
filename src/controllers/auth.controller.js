@@ -1,13 +1,16 @@
 import { formatValidationError } from "#utils/format.js";
-import { createUser, findUserByEmail, createUsersTable, deleteTable } from "#services/auth.service.js";
+import { createUser, findUserByEmail, createUsersTable, removeUserTable, findRegister } from "#services/auth.service.js";
 import { signupSchema, signinSchema } from "#validations/auth.validation.js";
 import bcrypt from 'bcrypt';
 import jwt from "jsonwebtoken";
 import logger from '#config/logger.js';
 import { getIdByUser, updateUser } from "#src/services/users.service.js";
+import sgMail from "@sendgrid/mail";
+
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 export const deleteUserTable = async (req, res) => {
-    deleteTable();
+    removeUserTable();
     logger.info("✅ Delete user table");
     res.status(200).json({ message: "Delete user table successfully" });
 };
@@ -18,7 +21,86 @@ export const initUserTable = async (req, res) => {
     res.status(200).json({ message: "Init user table successfully" });
 };
 
+export const deleteRegisterTable = async (req, res) => {
+    deleteRegisterTable();
+    logger.info("✅ Delete register table");
+    res.status(200).json({ message: "Delete register table successfully" });
+};
+
+export const initRegisterTable = async (req, res) => {
+    createRegisterTable();
+    logger.info("✅ Init register table");
+    res.status(200).json({ message: "Init register table successfully" });
+};
+
+function generateSecureSixDigitCode() {
+  const array = new Uint32Array(1);
+  crypto.getRandomValues(array);
+  return (array[0] % 1000000).toString().padStart(6, "0");
+}
+
 // ✅ 註冊
+export const request = async (req, res) => {
+    const { name, email } = req.body;
+
+    const token = jwt.sign({ email, name }, 
+        process.env.JWT_SECRET,
+       { expiresIn: "1h" });
+    
+    const register = await createRegister({ name, email });
+
+    // 寄信
+    const code = generateSecureSixDigitCode();
+    const code_hash = await bcrypt.hash(code, 10);
+    
+    await sgMail.send({
+      from: "noreply@gmail.com",
+      to: email,
+      subject: "Verify email from Oral cancer template",
+      html: `<p>Your Oral cancer app verification code is ${code}</p>`,
+    });
+
+    return res.status(201).render("verify", { success: true, message: "Verification email sent", email: email, token: token, code_hash: code_hash });
+};
+
+// 驗證註冊流程
+export const verify_register = async (req, res) => {
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+        if (req.body.email !== decoded.email) {
+          return res.status(401).json({ success: true, message: "Wrong email" });
+        }
+
+        const id = decoded.id;
+        const email = decoded.email;
+        const register = await findRegister({ email });
+        let updated = null;
+        const validCode = await bcrypt.compare(req.body.code, req.body.code_hash);
+
+        if (!validCode) {
+              return res.status(401).json({ 
+              success: false,
+              error: "Invalid credentials",
+              message: "Code not correct",
+          });
+        }
+
+        if (register && register.status == "pending") {
+            // check code verification
+            // req.body.code
+            // update status into user database
+            register.status = "complete";
+            updated = updateRegister(id, register);
+        }
+
+        return res.status(200).json({ success: true, message: "Verify register complete" });
+    } catch (err) {
+        logger.error("verify_register error:", e);
+        return res.status(401).json({ success: true, message: "Verify register error" });
+    }
+};
+
 export const register = async (req, res) => {
     res.render("register", { layout: false });
 };

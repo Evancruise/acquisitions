@@ -29,58 +29,87 @@ export const getIdByUser = async (fieldname, value) => {
 };
 
 /*
+Update registers
+*/
+export const updateRegister = async (id, updates) => {
+    const existing = await getUserById(id);
+    if (!existing) throw new Error("User not found");
+
+    if (updates.status) {
+      setClauses.push(`status = '${updates.status}'`);
+    } else {
+      updates.status = existing.status;
+    }
+
+    logger.info("applying update sql command");
+    
+    const updated = await sql`UPDATE registers
+    SET name = ${updates.name}, email = ${updates.email}, role = ${updates.role}, status = ${updates.status}
+    WHERE id = ${id}
+    RETURNING id, name, email, status
+    `;
+
+    if (updated.length === 0) {
+      throw new Error(`Update failed: user ${id} not found`);
+    }
+
+    logger.info("Updated registers Successfully");
+    return updated[0];
+};
+
+/*
 Update user
 */
 export const updateUser = async (id, updates) => {
-  const existing = await getUserById(id);
-  if (!existing) throw new Error("User not found");
+    const existing = await getUserById(id);
+    if (!existing) throw new Error("User not found");
 
-  const setClauses = [];
+    const setClauses = [];
 
-  if (updates.name) {
-    setClauses.push(`name = '${updates.name}'`);
-  } else {
-    updates.name = existing.name;
-  }
+    if (updates.name) {
+      setClauses.push(`name = '${updates.name}'`);
+    } else {
+      updates.name = existing.name;
+    }
 
-  if (updates.email) {
-    setClauses.push(`email = '${updates.email}'`);
-  } else {
-    updates.email = existing.email;
-  }
+    if (updates.email) {
+      setClauses.push(`email = '${updates.email}'`);
+    } else {
+      updates.email = existing.email;
+    }
 
-  if (updates.role) {
-    setClauses.push(`role = '${updates.role}'`);
-  } else {
-    updates.role = existing.role;
-  }
+    if (updates.role) {
+      setClauses.push(`role = '${updates.role}'`);
+    } else {
+      updates.role = existing.role;
+    }
 
-  let password_hash = null;
-  if (updates.password) {
-    password_hash = await bcrypt.hash(updates.password, 10);
-    updates.password = password_hash;
-    setClauses.push(`password = ${password_hash}`);
-  } else {
-    password_hash = await bcrypt.hash(existing.password, 10);
-    updates.password = password_hash;
-  }
+    let password_hash = null;
+    if (updates.password) {
+      password_hash = await bcrypt.hash(updates.password, 10);
+      updates.password = password_hash;
+      setClauses.push(`password = ${password_hash}`);
+    } else {
+      password_hash = await bcrypt.hash(existing.password, 10);
+      updates.password = password_hash;
+    }
 
-  if (setClauses.length === 0) return existing;
+    if (setClauses.length === 0) return existing;
 
-  logger.info("applying update sql command");
-  
-  const updated = await sql`UPDATE users
-  SET name = ${updates.name}, email = ${updates.email}, role = ${updates.role}, password = ${updates.password}, updated_at = NOW()
-  WHERE id = ${id}
-  RETURNING id, name, email, role, password, created_at, updated_at
-  `;
+    logger.info("applying update sql command");
+    
+    const updated = await sql`UPDATE users
+    SET name = ${updates.name}, email = ${updates.email}, role = ${updates.role}, password = ${updates.password}, updated_at = NOW()
+    WHERE id = ${id}
+    RETURNING id, name, email, role, password, created_at, updated_at
+    `;
 
-  if (updated.length === 0) {
-    throw new Error(`Update failed: user ${id} not found`);
-  }
+    if (updated.length === 0) {
+      throw new Error(`Update failed: user ${id} not found`);
+    }
 
-  logger.info("Updated users Successfully");
-  return updated[0];
+    logger.info("Updated users Successfully");
+    return updated[0];
 };
 
 /*
