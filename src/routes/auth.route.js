@@ -1,4 +1,5 @@
 import express from 'express';
+import path from 'path';
 import { register, 
         loginPage, 
         dashboard, 
@@ -13,18 +14,26 @@ import { register,
         verify_quick_changepwd, 
         request, 
         verify,
+        record,
         verify_register, 
         initRegisterTable,
-        deleteRegisterTable} from '#controllers/auth.controller.js';
+        deleteRegisterTable,
+        new_record,
+        edit_record} from '#controllers/auth.controller.js';
 // import { authenticateToken, authorizeRoles } from '#middleware/users.middleware.js';
 // import { sign } from 'jsonwebtoken';
 
 const router = express.Router();
 
+router.use("/static", express.static(path.join(process.cwd(), "public")));
+
 router.get("/register", register);
 router.get("/loginPage", loginPage);
 
 router.get("/dashboard", dashboard);
+router.get("/record", record);
+router.post("/new_record", new_record);
+router.post("/edit_record", edit_record);
 
 router.get("/changepwd", changepwd);
 router.get("/quick_changepwd", quickchangepwd);

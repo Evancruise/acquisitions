@@ -4,15 +4,21 @@ import { createUser,
          removeUserTable, 
          createRegister, 
          createRegisterTable, 
-         removeRegisterTable, 
-         findUserByEmail, 
+         removeRegisterTable,
          findRegister } from "#services/auth.service.js";
+import { createRecord, deleteRecord, updateRecord } from "#src/services/records.service.js";
 import { signupSchema, signinSchema } from "#validations/auth.validation.js";
 import bcrypt from 'bcrypt';
 import jwt from "jsonwebtoken";
 import logger from '#config/logger.js';
 import { getIdByUser, updateUser, updateRegister, updateUserTableFromRegister } from "#src/services/users.service.js";
+import { findRecord } from "#src/services/records.service.js";
 import sgMail from "@sendgrid/mail";
+import multer from "multer";
+import fs from "fs";
+import path from "path";
+
+const upload = multer({ dest: "uploads/" });
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
@@ -279,6 +285,7 @@ export const signin = async (req, res, next) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        token: token,
       },
     });
   //} catch (e) {
@@ -313,6 +320,227 @@ export const dashboard = (req, res) => {
     return res.redirect("/api/auth/loginPage");
   }
 };
+
+// record 頁面
+function formatDateTime(date) {
+    if (!(date instanceof Date)) date = new Date(date);
+    const iso = date.toISOString();
+    const [day, time] = iso.split("T");
+    return `${day} ${time.split(".")[0]}`;
+}
+
+export const record = async (req, res) => {
+
+    const token = req.cookies.token;  // 從 cookie 拿 token
+    if (!token) {
+        return res.redirect("/api/auth/loginPage"); // 沒有 token 回登入頁
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    logger.info(`decoded: ${JSON.stringify(decoded)}`);
+    logger.info(`decoded.name: ${decoded.name}`);
+
+    const record = await findRecord("name", decoded.name);
+    let length = 0;
+
+    logger.info(`record: ${JSON.stringify(record)}`);
+
+    let grouped = {};
+
+    if (record) {
+        // 1. 排序 (依 created_at 從新到舊)
+        record.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        logger.info(`record (sorted): ${JSON.stringify(record)}`);
+
+        // 假設 record 是陣列
+        length = Object.keys(record).length;
+        
+        // 2. 分組 (key = YYYY-MM-DD)
+        grouped = record.reduce((acc, item) => {
+          logger.info(`item.created_at: ${item.created_at}`);
+          const dateKey = item.created_at.toISOString().split("T")[0] // Date → YYYY-MM-DD
+          logger.info(`dateKey: ${dateKey}`);
+
+          if (!acc[dateKey]) {
+            acc[dateKey] = [];
+          }
+          acc[dateKey].push(item);
+          return acc;
+        }, {});
+        logger.info(`grouped: ${JSON.stringify(grouped)}`);
+    }
+
+    return res.status(201).render("record", 
+    { layout: "layout", 
+      grouped_records: grouped, 
+      priority: 1, 
+      path: "/api/auth/record", 
+      id: decoded.id, 
+      patient_id: `${decoded.id}-${length}`,
+      new_patient_id: `${decoded.id}-${length+1}`,
+      name: decoded.name,
+      token: token, 
+      formatDateTime });
+};
+
+export const new_record = [
+  upload.any(),  // multer 處理 multipart/form-data
+  async (req, res) => {
+    const body = req.body;
+    const files = req.files;
+
+    logger.info("req.headers:", req.headers);
+    logger.info("body:", body);
+    logger.info("files:", JSON.stringify(files, null, 2));
+
+    const token = body.token;
+    if (!token) {
+      return res.redirect("/api/auth/loginPage");
+    }
+
+    const action = body.action;  
+    const patientId = body.patient_id;
+
+    // 確保 patient_id 資料夾存在
+    const uploadDir = path.join(process.cwd(), "public", "uploads", patientId);
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+
+    // 儲存檔案到 patient_id 資料夾
+    const savedFiles = [];
+    for (const file of files) {
+      const targetPath = path.join(uploadDir, file.originalname);
+      fs.renameSync(file.path, targetPath);
+      savedFiles.push(`/uploads/${patientId}/${file.originalname}`);
+    }
+
+    let newRecord = null;
+
+    if (action === "create") {
+      /* 
+      update current new add user file into records table from body
+      */
+      newRecord = await createRecord(body);
+
+      // TODO: 把 files 存到資料夾，例如 uploads/{patient_id}/
+      return res.status(200).json({
+        layout: false,
+        success: true,
+        redirect: "/api/auth/record",
+        message: "Create new record successfully",
+        patient_id: patientId,
+        files: files.map(f => ({ field: f.fieldname, name: f.originalname }))
+      });
+    } else if (action === "infer") {
+      /* 
+      update current new add user file into records table from body
+      */
+      newRecord = await createRecord(body);
+
+      return res.status(200).json({
+        layout: false,
+        success: true,
+        redirect: "/api/auth/record",
+        message: "inference complete"
+      });
+    } else if (action === "check_result") {
+        return res.status(200).json({
+          success: true,
+          message: "檢查結果完成",
+          patient_id: patientId,
+          redirect: "/api/auth/record",
+          files: savedFiles,
+        });
+    } else {
+        return res.status(400).json({
+          layout: false,
+          success: false,
+          message: "unknown action"
+        });
+    }
+  }
+];
+
+export const edit_record = [
+  upload.any(),
+  async (req, res) => {
+    const body = req.body;
+    const files = req.files;
+
+    logger.info("req.headers:", req.headers);
+    logger.info("body:", body);
+    logger.info("files:", JSON.stringify(files, null, 2));
+
+    const token = body.token;
+    if (!token) {
+      return res.redirect("/api/auth/loginPage");
+    }
+
+    const action = body.action;
+    const patientId = body.patient_id;
+
+    const uploadDir = path.join(process.cwd(), "public", "uploads", patientId);
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+
+    const savedFiles = [];
+    for (const file of files) {
+      const targetPath = path.join(uploadDir, file.originalname);
+      fs.renameSync(file.path, targetPath);
+      savedFiles.push(`/uploads/${patientId}/${file.originalname}`);
+    }
+
+    // 儲存檔案到 patient_id 資料夾
+    const imgUpdates = {};
+    for (let i = 1; i <= 8; i++) {
+      const fieldName = `pic${i}_2`;
+      const file = files.find(f => f.fieldname === fieldName);
+      logger.info(`body[pic${i}_2]=`, body[`pic${i}_2`]);
+
+      if (file) {
+        // 有新檔 → 搬移到 patient_id 資料夾
+        const newPath = path.join(uploadDir, file.originalname);
+        await fs.promises.rename(file.path, newPath);
+
+        // 存 DB 用的相對路徑 (假設 uploads 在 public/static 底下)
+        const relativePath = path.relative("public", newPath).replace(/\\/g, "/");
+        imgUpdates[fieldName] = "/" + relativePath;
+      } else {
+        // 沒新檔 → 用 hidden input 傳來的舊路徑
+        imgUpdates[fieldName] = body[`pic${i}_2`] || null;
+      }
+    }
+
+    logger.info("imgUpdates:", imgUpdates);
+    
+    if (action === "save") {
+      const editRecord = await updateRecord(body, imgUpdates);
+
+      // TODO: 把 files 存到資料夾，例如 uploads/{patient_id}/
+      return res.status(200).json({
+        layout: false,
+        success: true,
+        redirect: "/api/auth/record",
+        message: "Edit new record successfully",
+        patient_id: patientId,
+        files: files.map(f => ({ field: f.fieldname, name: f.originalname }))
+      });
+    } else if (action === "delete") {
+      await deleteRecord(body);
+
+      // TODO: 把 files 存到資料夾，例如 uploads/{patient_id}/
+      return res.status(200).json({
+        layout: false,
+        success: true,
+        redirect: "/api/auth/record",
+        message: "Delete record successfully",
+        patient_id: patientId
+      });
+    }
+  }
+];
 
 export const changepwd = (req, res) => {
   logger.info(`body: ${JSON.stringify(req.query)}`);

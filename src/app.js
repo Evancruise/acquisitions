@@ -7,6 +7,7 @@ import cookieParser from 'cookie-parser';
 import authRoutes from '#routes/auth.route.js'; // ✅ 引入 authRoutes
 import usersRoutes from '#routes/users.route.js';
 import registersRoutes from '#routes/registers.route.js';
+import recordsRoutes from "#routes/records.route.js";
 
 import bodyParser from "body-parser";
 import expressLayouts from "express-ejs-layouts";
@@ -57,6 +58,7 @@ app.get('/api', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/registers', registersRoutes);
+app.use('/api/records', recordsRoutes);
 
 app.use((req, res) => {
     res.status(404).json({ error: 'Route not found' });

@@ -44,11 +44,11 @@ export const getIdByUser = async (fieldname, value) => {
     logger.info(`Search for ${fieldname}=${value}`);
     let result;
     if (fieldname == "name") {
-      result = await sql`SELECT id FROM users WHERE name = ${value}`;
+      result = await sql`SELECT * FROM users WHERE name = ${value}`;
     }
 
     if (fieldname == "email") {
-      result = await sql`SELECT id FROM users WHERE email = ${value}`;
+      result = await sql`SELECT * FROM users WHERE email = ${value}`;
     }
 
     return result[0] || null;
