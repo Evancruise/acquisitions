@@ -1,28 +1,28 @@
 <% Object.entries(grouped_records).forEach(([date_display, items]) => { %>
-  <div class="date-divider"><%= date_display %></div>
-  <% items.forEach(item => { %>
-    <div class="record-card">
-        <a class="record-link"
-        data-bs-toggle="modal"
-        data-bs-target="#editRecordModal"
-        data-name="<%= item.name %>"
-        data-gender="<%= item.gender %>"
-        data-age="<%= item.age %>"
-        data-patient_id="<%= item.patient_id %>"
-        data-notes="<%= item.notes %>"
-        data-record_id="<%= item.id %>"
-        data-pic1="<%= item.img1 %>"
-        data-pic2="<%= item.img2 %>"
-        data-pic3="<%= item.img3 %>"
-        data-pic4="<%= item.img4 %>"
-        data-pic5="<%= item.img5 %>"
-        data-pic6="<%= item.img6 %>"
-        data-pic7="<%= item.img7 %>"
-        data-pic8="<%= item.img8 %>">
-            <%= formatDateTime(item.created_at) %>
-        </a>
-    </div>
-  <% }) %>
+    <div class="date-divider"><%= date_display %></div>
+    <% items.forEach(item => { %>
+        <div class="record-card">
+            <a class="record-link"
+            data-bs-toggle="modal"
+            data-bs-target="#editRecordModal"
+            data-name="<%= item.name %>"
+            data-gender="<%= item.gender %>"
+            data-age="<%= item.age %>"
+            data-patient_id="<%= item.patient_id %>"
+            data-notes="<%= item.notes %>"
+            data-record_id="<%= item.id %>"
+            data-pic1="<%= item.img1 %>"
+            data-pic2="<%= item.img2 %>"
+            data-pic3="<%= item.img3 %>"
+            data-pic4="<%= item.img4 %>"
+            data-pic5="<%= item.img5 %>"
+            data-pic6="<%= item.img6 %>"
+            data-pic7="<%= item.img7 %>"
+            data-pic8="<%= item.img8 %>">
+                <%= formatDateTime(item.created_at) %>
+            </a>
+        </div>
+    <% }) %>
 <% }) %>
 
 <!-- 浮動新增按鈕，導向「新增頁面」 -->
@@ -45,9 +45,9 @@
             <!-- 基本資料 -->
             <div class="section-toggle styled-toggle" data-bs-toggle="collapse" data-bs-target="#basicInfoCollapse"
             role="button" aria-expanded="true" aria-controls="basicInfoCollapse">
-            <h5 class="toggle-title">
-                <i class="fas fa-chevron-down me-2 rotate-icon" data-target="#basicInfoCollapse"></i> 基本資料
-            </h5>
+                <h5 class="toggle-title">
+                    <i class="fas fa-chevron-down me-2 rotate-icon" data-target="#basicInfoCollapse"></i> 基本資料
+                </h5>
             </div>
 
             <input type="hidden" name="token" id="token" value="<%= token %>">
@@ -265,7 +265,7 @@
                     <button type="submit" name="action" value="save" class="btn btn-primary btn-lg" style="width: 48%;">
                         <i class="fas fa-save"></i> 儲存
                     </button>
-                    <button type="submit" name="action" value="delete"class="btn btn-secondary btn-lg" data-bs-dismiss="modal" style="width: 48%;">
+                    <button type="submit" name="action" value="delete" class="btn btn-secondary btn-lg" style="width: 48%;">
                         <i class="fas delete"></i> 刪除
                     </button>
                 </div>

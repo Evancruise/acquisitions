@@ -19,7 +19,9 @@ import { register,
         initRegisterTable,
         deleteRegisterTable,
         new_record,
-        edit_record} from '#controllers/auth.controller.js';
+        edit_record,
+        recycle_bin,
+        recycle_record} from '#controllers/auth.controller.js';
 // import { authenticateToken, authorizeRoles } from '#middleware/users.middleware.js';
 // import { sign } from 'jsonwebtoken';
 
@@ -34,6 +36,9 @@ router.get("/dashboard", dashboard);
 router.get("/record", record);
 router.post("/new_record", new_record);
 router.post("/edit_record", edit_record);
+
+router.get("/recycle_bin", recycle_bin);
+router.post("/recycle_record", recycle_record);
 
 router.get("/changepwd", changepwd);
 router.get("/quick_changepwd", quickchangepwd);

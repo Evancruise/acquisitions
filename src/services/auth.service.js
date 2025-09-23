@@ -140,16 +140,21 @@ export const findRegister = async ({email}) => {
   return result[0] || null;
 };
 
-// ✅ 依 email 查詢使用者
-export const findUserByEmail = async (email) => {
+// ✅ 查詢使用者
+export const findUser = async (key, value) => {
   logger.info(`email: ${email}`);
-  const result = await sql`SELECT * FROM users WHERE email = ${email}`;
+  let result = null;
+  if (key === "name") {
+    result = await sql`SELECT * FROM users WHERE name = ${value}`;
+  } else if (key === "email") {
+    result = await sql`SELECT * FROM users WHERE email = ${value}`;
+  }
   return result[0] || null;
 };
 
 // ✅ 驗證使用者密碼
 export const validateUserCredentials = async ({email, password}) => {
-  const user = await findUserByEmail(email);
+  const user = await findUser("email", email);
 
   if (!user) {
     throw new Error("Invalid credentials");
