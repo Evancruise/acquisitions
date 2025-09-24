@@ -142,7 +142,6 @@ export const findRegister = async ({email}) => {
 
 // ✅ 查詢使用者
 export const findUser = async (key, value) => {
-  logger.info(`email: ${email}`);
   let result = null;
   if (key === "name") {
     result = await sql`SELECT * FROM users WHERE name = ${value}`;

@@ -19,6 +19,8 @@ import sgMail from "@sendgrid/mail";
 import multer from "multer";
 import fs from "fs";
 import path from "path";
+import { getAllRecords } from "#services/records.service.js";
+import ExcelJS from "exceljs";
 
 const upload = multer({ dest: "uploads/" });
 const upload_gb = multer({ dest: "uploads_gb/" });
@@ -558,6 +560,88 @@ export const edit_record = [
     }
   }
 ];
+
+export const record_search = async (req, res) => {
+    const token = req.cookies.token;  // 從 cookie 拿 token
+    if (!token) {
+        return res.redirect("/api/auth/loginPage"); // 沒有 token 回登入頁
+    }
+
+    let grouped = {};
+
+    const allRecords = await getAllRecords();
+
+    logger.info(`allRecords: ${JSON.stringify(allRecords)}`);
+
+    let length = 0;
+
+    if (allRecords) {
+        // 1. 排序 (依 created_at 從新到舊)
+        allRecords.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+        // 假設 record 是陣列
+        length = Object.keys(allRecords).length;
+
+        // 2. 分組 (key = YYYY-MM-DD)
+        grouped = allRecords.reduce((acc, item) => {
+          logger.info(`item.created_at: ${item.created_at}`);
+          const dateKey = item.created_at.toISOString().split("T")[0] // Date → YYYY-MM-DD
+          logger.info(`dateKey: ${dateKey}`);
+
+          if (!acc[dateKey]) {
+            acc[dateKey] = [];
+          }
+          acc[dateKey].push(item);
+          return acc;
+        }, {});
+        logger.info(`grouped: ${JSON.stringify(grouped)}`);
+    }
+
+    return res.status(201).render("record_search", 
+    { layout: "layout",  
+      grouped_records: grouped, 
+      today_date: (new Date()).toISOString().split("T")[0],
+      priority: 1, 
+      path: "/api/auth/record_search", 
+      token: token });
+};
+
+export const export_data = async (req, res) => {
+    try {
+        logger.info(`export_data req.body: ${JSON.stringify(req.body)}`);
+        const rows = JSON.parse(req.body.tableData || "[]");
+
+        if (!rows.length) {
+            return res.status(400).json({ success: false, message: "No data to export" });  
+        }
+
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Records');
+
+        worksheet.columns = [
+          { header: "影像案例編號", key: "patient_id", width: 20 },
+          { header: "建立日期", key: "created_at", width: 15 },
+          { header: "上傳日期", key: "updated_at", width: 15 },
+          { header: "上傳人員", key: "name", width: 15 },
+          { header: "分析狀態", key: "status", width: 15 },
+          { header: "備註", key: "notes", width: 30 }
+        ];
+
+        // 加入資料
+        rows.forEach((r) => worksheet.addRow(r));
+
+        // 設定回應 headers → 讓瀏覽器自動下載
+        res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        res.setHeader("Content-Disposition", "attachment; filename=records.xlsx");
+
+        // 把 workbook 寫到 response stream
+        await workbook.xlsx.write(res);
+        res.end();
+    } catch (e) {
+        logger.error("export_data error:", e);
+        return res.status(500).json({ success: false, message: "Export data failed" });
+    }
+};
 
 export const recycle_bin = async (req, res) => {
     

@@ -21,11 +21,15 @@ import { register,
         new_record,
         edit_record,
         recycle_bin,
-        recycle_record} from '#controllers/auth.controller.js';
+        recycle_record,
+        record_search,
+        export_data} from '#controllers/auth.controller.js';
 // import { authenticateToken, authorizeRoles } from '#middleware/users.middleware.js';
 // import { sign } from 'jsonwebtoken';
+import multer from "multer";
 
 const router = express.Router();
+const upload = multer();
 
 router.use("/static", express.static(path.join(process.cwd(), "public")));
 
@@ -39,6 +43,9 @@ router.post("/edit_record", edit_record);
 
 router.get("/recycle_bin", recycle_bin);
 router.post("/recycle_record", recycle_record);
+
+router.get("/record_search", record_search);
+router.post("/export_data", upload.none(), export_data);
 
 router.get("/changepwd", changepwd);
 router.get("/quick_changepwd", quickchangepwd);
