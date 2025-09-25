@@ -7,10 +7,10 @@ export function isWithinDateRange(dateStr, startStr, endStr) {
 }
 
 export function applyFilters(rows) {
-  const daterange = document.getElementById('dateRange').value.trim();
-  const uploader = document.getElementById('uploader').value.trim();
-  const status = document.getElementById('status').value;
-  const category = document.getElementById('category').value;
+  const daterange = document.getElementById('dateRange')?.value.trim();
+  const uploader = document.getElementById('uploader')?.value.trim();
+  const status = document.getElementById('status')?.value;
+  const category = document.getElementById('category')?.value;
 
   if (rows.length === 0) return rows;
 

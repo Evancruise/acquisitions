@@ -29,18 +29,9 @@ export const getIdByRegister = async (fieldname, value) => {
 };
 
 /*
-Get User by ID
-*/
-export const getUserById = async (id) => {
-    logger.info(`Search for id=${id}`);
-    const result = await sql`SELECT * FROM users WHERE id = ${id}`;
-    return result[0] || null;
-};
-
-/*
 Get ID by User
 */
-export const getIdByUser = async (fieldname, value) => {
+export const getUser = async (fieldname, value) => {
     logger.info(`Search for ${fieldname}=${value}`);
     let result;
     if (fieldname == "name") {
@@ -49,6 +40,10 @@ export const getIdByUser = async (fieldname, value) => {
 
     if (fieldname == "email") {
       result = await sql`SELECT * FROM users WHERE email = ${value}`;
+    }
+
+    if (fieldname == "id") {
+      result = await sql`SELECT * FROM users WHERE id = ${value}`;
     }
 
     return result[0] || null;
@@ -112,8 +107,11 @@ export const updateUserTableFromRegister = async (id, name) => {
 /*
 Update user
 */
-export const updateUser = async (id, updates) => {
-    const existing = await getUserById(id);
+export const updateUser = async (fieldname, value, updates) => {
+    const existing = await getUser(fieldname, value);
+
+    logger.info(`existing: ${JSON.stringify(existing)}`);
+
     if (!existing) throw new Error("User not found");
 
     const setClauses = [];
@@ -136,6 +134,12 @@ export const updateUser = async (id, updates) => {
       updates.role = existing.role;
     }
 
+    if (updates.unit) {
+      setClauses.push(`unit = '${updates.unit}'`);
+    } else {
+      updates.unit = existing.unit;
+    }
+
     let password_hash = null;
     if (updates.password) {
       password_hash = await bcrypt.hash(updates.password, 10);
@@ -151,9 +155,9 @@ export const updateUser = async (id, updates) => {
     logger.info("applying update sql command");
     
     const updated = await sql`UPDATE users
-    SET name = ${updates.name}, email = ${updates.email}, role = ${updates.role}, password = ${updates.password}, updated_at = NOW()
-    WHERE id = ${id}
-    RETURNING id, name, email, role, password, created_at, updated_at
+    SET name = ${updates.name}, email = ${updates.email}, role = ${updates.role}, password = ${updates.password}, unit = ${updates.unit}, updated_at = NOW()
+    WHERE id = ${existing.id}
+    RETURNING id, name, email, role, unit, password, created_at, updated_at
     `;
 
     if (updated.length === 0) {
@@ -168,7 +172,7 @@ export const updateUser = async (id, updates) => {
 Delete user
 */
 export const deleteUser = async (id) => {
-    const existing = await getUserById(id);
+    const existing = await getUser("id", id);
 
     if (!existing) {
       throw new Error("User not found");
@@ -189,6 +193,7 @@ export const getAllUsers = async () => {
             email,
             name,
             role,
+            unit,
             password,
             created_at,
             updated_at

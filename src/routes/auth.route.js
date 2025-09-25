@@ -23,7 +23,13 @@ import { register,
         recycle_bin,
         recycle_record,
         record_search,
-        export_data} from '#controllers/auth.controller.js';
+        export_data,
+        account_management,
+        new_account,
+        edit_account,
+        rebind_page,
+        rebind_qr,
+        scan_result} from '#controllers/auth.controller.js';
 // import { authenticateToken, authorizeRoles } from '#middleware/users.middleware.js';
 // import { sign } from 'jsonwebtoken';
 import multer from "multer";
@@ -46,6 +52,14 @@ router.post("/recycle_record", recycle_record);
 
 router.get("/record_search", record_search);
 router.post("/export_data", upload.none(), export_data);
+
+router.get("/account_management", account_management);
+router.post("/edit_account", upload.none(), edit_account);
+router.post("/new_account", upload.none(), new_account);
+
+router.get("/rebind_page", rebind_page);
+router.get("/rebind-qr", rebind_qr);
+router.post("/scan_result", scan_result);
 
 router.get("/changepwd", changepwd);
 router.get("/quick_changepwd", quickchangepwd);

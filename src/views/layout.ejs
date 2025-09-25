@@ -9,6 +9,8 @@
     <link rel="stylesheet" href="/css/record.css">
     <link rel="stylesheet" href="/css/record_search.css">
     <link rel="stylesheet" href="/css/quick_changepwd.css">
+    <link rel="stylesheet" href="/css/account_management.css">
+    <link rel="stylesheet" href="/css/rebind_qr.css">
     <link rel="stylesheet" href="/static/css/bootstrap.min.css">
 </head>
 <body>
@@ -37,9 +39,9 @@
                 </a>
             </li>
             <li>
-                <a class="nav-link <%= (path === '/api/auth/all_account') ? 'active' : '' %>"
+                <a class="nav-link <%= (path === '/api/auth/account_management') ? 'active' : '' %>"
                     style="display: <%= (priority === 1) ? 'flex' : 'none' %>"
-                    href="/api/auth/all_account">
+                    href="/api/auth/account_management">
                     <i class="fas fa-history"></i> 帳號管理
                 </a>
             </li>
@@ -54,7 +56,7 @@
                 </a>
             </li>
             <li>
-                <a class="nav-link <%= (path === '/api/auth/rebind-page') ? 'active' : '' %>" href="/api/auth/rebind-page">
+                <a class="nav-link <%= (path === '/api/auth/rebind_page') ? 'active' : '' %>" href="/api/auth/rebind_page">
                     <i class="fas fa-link"></i> 重新綁定
                 </a>
             </li>
@@ -91,4 +93,6 @@
     <script type="module" src="/js/record.js"></script>
     <script type="module" src="/js/record_search.js"></script>
     <script type="module" src="/js/recycle_bin.js"></script>
+    <script type="module" src="/js/account_management.js"></script>
+    <script type="module" src="/js/rebind_qr.js"></script>
 </body>

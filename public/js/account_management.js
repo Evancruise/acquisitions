@@ -1,0 +1,127 @@
+import { loadModal, showModal } from "./modal.js";
+import { renderUserTable } from "./table.js";
+import { renderUserPagination } from "./pagination.js";
+
+loadModal("modal-container");
+
+const account_form = document.getElementById("account_form");
+const add_account_form = document.getElementById("add_account_form");
+const table_wraps = document.querySelectorAll(".table-wrap");
+
+document.addEventListener("DOMContentLoaded", () => {
+    const user_data = document.getElementById("users-data");
+
+    if (!user_data) {
+        return;
+    }
+
+    const users = JSON.parse(user_data.textContent);
+    const usersArray = Array.isArray(users) ? users : Object.values(users);
+
+    console.log("users:", users);
+
+    const pageSize = 8;
+    let currentPage = 1;
+
+    function update(newPage = currentPage) {
+        console.log(`Updating to page ${newPage}`);
+        currentPage = newPage;
+        renderUserTable(usersArray, pageSize, currentPage);
+        renderUserPagination(usersArray, pageSize, currentPage, update);
+    }
+
+    // 初始渲染
+    update(1);
+
+    if (table_wraps) {
+        table_wraps.forEach(wrap => {
+            wrap.addEventListener('click', (e) => {
+                const btn = e.target.closest('.modify_btn');
+                if (!btn || !wrap.contains(btn)) return;  // 不是點到「修改」就略過
+
+                console.log(btn.dataset);
+                // 這裡就可以用 dataset（kebab 會轉 camelCase）
+                const { fAccount, fName, fPassword, fUnit, fRole, fStatus, fNote } = btn.dataset;
+
+                console.log(fAccount, fName, fPassword, fUnit, fRole, fStatus, fNote);
+
+                const modal = document.getElementById("curAccountModal");
+
+                console.log(modal, modal?.querySelector("input[name='account']"));
+                
+                modal.querySelector("input[name='email']").value = fAccount || '';
+                modal.querySelector("input[name='name']").value    = fName    || '';
+                modal.querySelector("input[name='password']").value    = fPassword    || '';
+                modal.querySelector("input[name='unit']").value    = fUnit    || '';
+                modal.querySelector("select[name='role']").value    = fRole    || 'tester';
+                modal.querySelector("select[name='status']").value = fStatus  || 'deactivated';
+                modal.querySelector("textarea[name='notes']").value = fNote    || '';
+            });
+        });
+    }
+
+    if (account_form) {
+        account_form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(account_form);
+            
+            // 把觸發的按鈕補進 formData
+            if (e.submitter) {
+                formData.append(e.submitter.name, e.submitter.value);
+            }
+
+            const res = await fetch('/api/auth/edit_account', {
+                method: 'POST',
+                body: formData,
+            });
+
+            const data = await res.json();
+
+            if (!data.success) {
+                showModal(`編輯使用者失敗: ${data.message}`);
+                return;
+            }
+
+            showModal("編輯使用者成功", () => {
+                setTimeout(() => {
+                    window.location.href = data.redirect; // 怎麼引入 data.name?
+                }, 1500);
+            }, () => {
+                setTimeout(() => {
+                    window.location.href = data.redirect; // 怎麼引入 data.name?
+                }, 1500);
+            });
+        });
+    }
+
+    if (add_account_form) {
+        add_account_form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(add_account_form);
+
+            const res = await fetch('/api/auth/new_account', {
+                method: 'POST',
+                body: formData,
+            });
+
+            const data = await res.json();
+
+            if (!data.success) {
+                showModal(`新增使用者失敗: ${data.message}`);
+                return;
+            }
+
+            showModal("新增使用者成功", () => {
+                setTimeout(() => {
+                    window.location.href = data.redirect; // 怎麼引入 data.name?
+                }, 1500);
+            }, () => {
+                setTimeout(() => {
+                    window.location.href = data.redirect; // 怎麼引入 data.name?
+                }, 1500);
+            });
+        });
+    }
+});

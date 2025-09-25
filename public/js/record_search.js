@@ -6,9 +6,16 @@ loadModal('modal-container');
 
 const table_record_wraps = document.querySelectorAll(".table-record-wrap");
 const search_form = document.getElementById("search_form");
+const btn_search = document.getElementById("btn-search");
 
 document.addEventListener("DOMContentLoaded", () => {
-    const rows = JSON.parse(document.getElementById("rows-data").textContent);
+    const row_data = document.getElementById("rows-data");
+
+    if (!row_data) {
+        return;
+    }
+    
+    const rows = JSON.parse(row_data.textContent);
     const rowsArray = Array.isArray(rows) ? rows : Object.values(rows);
 
     console.log(`rows: ${JSON.stringify(rows)}`);
@@ -26,21 +33,26 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // 綁定查詢按鈕
-    document.getElementById('btn-search').addEventListener('click', ()=> {
-        currentPage = 1;
-        update();
-    });
+    if (btn_search) {
+        btn_search.addEventListener('click', ()=> {
+            currentPage = 1;
+            update();
+        });
+    }
 
     // 初始化 uploader 選單
     const uploader = document.getElementById('uploader');
-    let html = "<option value=\"all\">全部</option>";
-    if (rows.length !== 0) {
-        const uniqueUsers = [...new Set(rowsArray.flat().map(r => r.name))];
-        uniqueUsers.forEach(user => {
-        html += `<option value="${user}">${user}</option>`;
-        });
+
+    if (uploader) {
+        let html = "<option value=\"all\">全部</option>";
+        if (rows.length !== 0) {
+            const uniqueUsers = [...new Set(rowsArray.flat().map(r => r.name))];
+            uniqueUsers.forEach(user => {
+            html += `<option value="${user}">${user}</option>`;
+            });
+        }
+        uploader.innerHTML = html;
     }
-    uploader.innerHTML = html;
 
     // 首次渲染
     update();

@@ -1,6 +1,53 @@
 // table.js
 import { applyFilters } from './filters.js';
 
+export function renderUserTable(users, pageSize, currentPage) {
+  const tbody = document.getElementById("tbody");
+  const start = (currentPage - 1) * pageSize;
+  const end = start + pageSize;
+  const pageRows = users.slice(start, end);
+
+  tbody.innerHTML = pageRows.flat()
+    .map((u) => {
+
+      console.log("Rendering user:", u);
+
+      const statusBadge =
+        u.status === "啟用" || u.status === "activated"
+          ? '<span class="badge badge-ok">啟用</span>'
+          : '<span class="badge badge-off">停用</span>';
+
+      const role = u.role ? `<span class="role">${u.role}</span>` : "";
+
+      return `
+        <tr>
+            <td data-th="帳號">${u.email}</td>
+            <td data-th="姓名">${u.name}</td>
+            <td data-th="密碼">
+              <span class="masked">******</span>
+              <span class="real d-none">${u.password || ''}</span>
+            </td>
+            <td data-th="單位">${u.unit || ""}</td>
+            <td data-th="身分">${role}</td>
+            <td data-th="備註">${u.note || ""}</td>
+            <td data-yj="修改/刪除">
+              <button type="button" class="modify_btn btn btn-sm btn-primary"
+                      data-bs-toggle="modal" data-bs-target="#curAccountModal"
+                      data-f-account="${u.email ?? ""}"
+                      data-f-name="${u.name ?? ""}"
+                      data-f-password="${u.password ?? ""}"
+                      data-f-unit="${u.unit ?? ""}"
+                      data-f-role="${u.role ?? ""}"
+                      data-f-status="${u.status ?? ""}"
+                      data-f-note="${u.note ?? ""}">
+                修改
+              </button>
+            </td>
+        </tr>`;
+    })
+    .join("");
+};
+
 export function renderTable(rows, pageSize, currentPage) {
   const data = applyFilters(rows);
   const start = (currentPage - 1) * pageSize;

@@ -1,6 +1,6 @@
 import express from "express";
 import { getUserByIdController, updateUserController, deleteUserController, fetchAllUsers } from "#controllers/users.controller.js";
-import { authenticateToken, validateUpdateUser, authorizeRoles } from "#middleware/users.middleware.js";
+import { authenticateToken, authorizeRoles } from "#middleware/users.middleware.js";
 import logger from "#config/logger.js";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";

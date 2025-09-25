@@ -39,7 +39,7 @@ export const createRegisterTable = async () => {
         name VARCHAR(100) UNIQUE NOT NULL,
         email VARCHAR(255) UNIQUE NOT NULL,
         password TEXT,
-        role VARCHAR(50) DEFAULT 'user',
+        role VARCHAR(50) DEFAULT 'tester',
         status VARCHAR(50) DEFAULT 'pending',
         created_at TIMESTAMP DEFAULT NOW(),
         expired_at TIMESTAMP DEFAULT NOW()
@@ -64,7 +64,10 @@ export const createUsersTable = async () => {
         name VARCHAR(100) UNIQUE NOT NULL,
         email VARCHAR(255) UNIQUE NOT NULL,
         password TEXT,
-        role VARCHAR(50) DEFAULT 'user',
+        role VARCHAR(50) DEFAULT 'tester',
+        unit VARCHAR(100),
+        note TEXT,
+        status VARCHAR(50) DEFAULT 'deactivated',
         created_at TIMESTAMP DEFAULT NOW(),
         updated_at TIMESTAMP DEFAULT NOW()
       )
@@ -78,7 +81,7 @@ export const createUsersTable = async () => {
 };
 
 // ✅ 建立註冊使用者
-export const createRegister = async ({ name, email, role = "user" }) => {
+export const createRegister = async ({ name, email, role = "tester" }) => {
   try {
     // raw SQL 查詢
     const existingRegister = await sql`SELECT * FROM registers WHERE email = ${email}`;
@@ -89,7 +92,7 @@ export const createRegister = async ({ name, email, role = "user" }) => {
 
     const newRegister = await sql`
       INSERT INTO registers (name, email, role, status, created_at, expired_at)
-      VALUES (${name}, ${email}, 'user', 'pending', NOW(), NOW() + interval '1 hour')
+      VALUES (${name}, ${email}, ${role}, 'pending', NOW(), NOW() + interval '1 hour')
       RETURNING id, name, email, status, created_at, expired_at
     `;
 
@@ -102,7 +105,7 @@ export const createRegister = async ({ name, email, role = "user" }) => {
 }
 
 // ✅ 建立新使用者
-export const createUser = async ({ name, email, password, role = "user" }) => {
+export const createUser = async ({ name, email, password, role = "tester", unit = "personal", note = "none" }) => {
   try {
     // raw SQL 查詢
     const existingUser = await sql`SELECT * FROM users WHERE email = ${email}`;
@@ -120,9 +123,9 @@ export const createUser = async ({ name, email, password, role = "user" }) => {
     console.log("🔍 Step 3: 插入新使用者");
 
     const newUser = await sql`
-      INSERT INTO users (name, email, password, role)
-      VALUES (${name}, ${email}, ${password_hash}, ${role})
-      RETURNING id, name, email, password, role, created_at
+      INSERT INTO users (name, email, password, role, unit, note)
+      VALUES (${name}, ${email}, ${password_hash}, ${role}, ${unit}, ${note})
+      RETURNING id, name, email, password, role, unit, note, status, created_at
     `;
 
     console.log("✅ Step 3 完成:", newUser[0]);

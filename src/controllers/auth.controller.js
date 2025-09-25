@@ -12,7 +12,7 @@ import { signupSchema, signinSchema } from "#validations/auth.validation.js";
 import bcrypt from 'bcrypt';
 import jwt from "jsonwebtoken";
 import logger from '#config/logger.js';
-import { getIdByUser, updateUser, updateRegister, updateUserTableFromRegister } from "#src/services/users.service.js";
+import { getUser, updateUser, updateRegister, updateUserTableFromRegister } from "#src/services/users.service.js";
 import { findRecord, findDiscardRecord } from "#src/services/records.service.js";
 import { movefiles, deletefiles } from "#utils/func.js";
 import sgMail from "@sendgrid/mail";
@@ -20,7 +20,9 @@ import multer from "multer";
 import fs from "fs";
 import path from "path";
 import { getAllRecords } from "#services/records.service.js";
+import { getAllUsers } from "#src/services/users.service.js";
 import ExcelJS from "exceljs";
+import QRCode from "qrcode";
 
 const upload = multer({ dest: "uploads/" });
 const upload_gb = multer({ dest: "uploads_gb/" });
@@ -643,6 +645,123 @@ export const export_data = async (req, res) => {
     }
 };
 
+export const account_management = async (req, res) => {
+    const token = req.cookies.token;  // 從 cookie 拿 token
+    if (!token) {
+        return res.redirect("/api/auth/loginPage"); // 沒有 token 回登入頁
+    }
+
+    const allUsers = await getAllUsers();
+
+    logger.info(`allUsers: ${JSON.stringify(allUsers)}`);
+
+    let length = 0;
+
+    let grouped = {};
+
+    if (allUsers) {
+        // 1. 排序 (依 created_at 從新到舊)
+        allUsers.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+        // 假設 record 是陣列
+        length = Object.keys(allUsers).length;
+
+        // 2. 分組 (key = YYYY-MM-DD)
+        grouped = allUsers.reduce((acc, item) => {
+          const dateName = item.name
+          logger.info(`dateName: ${dateName}`);
+
+          if (!acc[dateName]) {
+            acc[dateName] = [];
+          }
+          acc[dateName].push(item);
+          return acc;
+        }, {});
+        logger.info(`grouped: ${JSON.stringify(grouped)}`);
+    }
+
+    return res.status(201).render("account_management", 
+    { layout: "layout",  
+      grouped_accounts: grouped, 
+      today_date: (new Date()).toISOString().split("T")[0],
+      priority: 1, 
+      path: "/api/auth/account_management", 
+      token: token });
+};
+
+export const new_account = async (req, res) => {
+  try {
+    const body = req.body;
+    const { name, email, password, role, unit, notes } = body;
+
+    logger.info("body:", body);
+
+    const user = await createUser({ name, email, password, role, unit, notes });
+    
+    logger.info(`user: ${JSON.stringify(user)}`);
+
+    return res.status(201).json({ success: true, message: "Create new account successfully", redirect: "/api/auth/account_management" });
+  } catch (e) {
+    logger.error("new_account error:", e);
+    return res.status(409).json({ success: false, message: "Email already exists" });
+  }
+};
+
+export const edit_account = async (req, res) => {
+  try {  
+    const body = req.body;
+    const action = body.action;
+
+    logger.info("body:", body);
+
+    if (action === "save") {
+        const user = await updateUser("name", body.name, body);
+        logger.info(`user: ${JSON.stringify(user)}`);
+        return res.status(201).json({ success: true, message: "Edit account successfully", redirect: "/api/auth/account_management" });
+    } else if (action === "delete") {
+        const user = await deleteUser(body);
+        logger.info(`user: ${JSON.stringify(user)}`);
+        return res.status(201).json({ success: true, message: "Delete account successfully", redirect: "/api/auth/account_management" });
+    }
+  } catch (e) {
+    logger.error("edit_account error:", e);
+    return res.status(409).json({ success: false, message: "Edit account failed" });
+  }
+};
+
+export const rebind_page = async (req, res) => {
+    const token = req.cookies.token;  // 從 cookie 拿 token
+    if (!token) {
+        return res.redirect("/api/auth/loginPage"); // 沒有 token 回登入頁
+    }
+    return res.status(201).render("rebind_page", { layout: "layout", priority: 1, path: "/api/auth/rebind_page", token: token });
+};
+
+export const rebind_qr = async (req, res) => {
+    try {
+      const qrData = "user-binding-token-" + Date.now();
+      const qrImage = await QRCode.toDataURL(qrData);
+
+      const img = qrImage.replace(/^data:image\/png;base64,/, "");
+      const imgBuffer = Buffer.from(img, "base64");
+      res.setHeader("Content-Type", "image/png");
+      res.send(imgBuffer);
+    } catch (e) {
+      res.status(500).send("QR code generation failed");
+    }
+};
+
+export const scan_result = async (req, res) => {
+    const { qrContent } = req.body;
+    logger.info(`qrContent: ${qrContent}`);
+
+    if (qrContent && qrContent.startsWith("user-binding-token-")) {
+        return res.json({ success: true, message: "QR code valid", redirect: "/api/auth/rebind_page" });
+    } else {
+        return res.status(400).json({ success: false, message: "Invalid QR code" });
+    }
+};
+
 export const recycle_bin = async (req, res) => {
     
     const token = req.cookies.token;  // 從 cookie 拿 token
@@ -773,8 +892,8 @@ export const verify_changepwd = async (req, res) => {
 
   logger.info(`req.body: ${JSON.stringify(req.body)}`);
 
-  const userIdByName = await getIdByUser("name", req.body.name);
-  const userIdByEmail = await getIdByUser("email", req.body.email);
+  const userIdByName = await getUser("name", req.body.name);
+  const userIdByEmail = await getUser("email", req.body.email);
 
   logger.info(`userIdByName: ${JSON.stringify(userIdByName)}`);
   logger.info(`userIdByEmail: ${JSON.stringify(userIdByEmail)}`);
@@ -805,7 +924,7 @@ export const verify_changepwd = async (req, res) => {
     });
   }
 
-  const updated = updateUser(id, req.body);
+  const updated = updateUser("id", id, req.body);
 
   return res.status(200).json({ success: true, layout: false, message: "Verify changepwd success!" });
 };
@@ -834,7 +953,7 @@ export const quickchangepwd = (req, res) => {
 
 export const verify_quick_changepwd = async (req, res) => {
   try {
-    const user = await getIdByUser("name", req.body.name);
+    const user = await getUser("name", req.body.name);
     const id = user.id;
 
     const token = req.cookies.token;  // 從 cookie 拿 token
@@ -865,7 +984,7 @@ export const verify_quick_changepwd = async (req, res) => {
       });
     }
 
-    const updated = updateUser(id, req.body);
+    const updated = updateUser("id", id, req.body);
 
     return res.status(200).json({ 
         success: true, 

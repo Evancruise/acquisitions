@@ -1,0 +1,50 @@
+<div class="main-content">
+    <div class="rebind-pwd-container" style="text-align: center;">
+        <!-- 電腦版：顯示 QR Code -->
+        <div class="form-group">
+            <img id="qr-image" src="/api/auth/rebind-qr" alt="QR Code" style="width: 250px;" />
+            <div style="margin-top: 0.5rem; font-size: 14px; color: #555;">
+                下次刷新倒數：<span id="countdown">30</span> 秒
+            </div>
+            <button id="reload-btn" style="margin-bottom: 1rem;">
+            🔄 重新生成 QR code
+            </button>
+        </div>  
+
+        <!-- 手機版：掃描 QR Code -->
+        <button
+            id="btn-toggle-scanner"
+            style="
+            margin-top: 1rem;
+            padding: 0.5rem 1rem;
+            background-color: #0d6efd;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            "
+        >
+            打開相機掃描
+        </button>  
+
+        <div id="scanner-container" style="margin-top: 1rem; display: none;">
+            <video id="camera" autoplay playsinline style="width: 300px; border: 1px solid #ccc;"></video>
+            <br>
+            <canvas id="snapshot" style="display:none; margin-top:0.5rem;"></canvas>
+            
+            <button id="capture-btn" style="margin-top:0.5rem;"> 拍照 </button>
+            
+            <button id="send-scan-btn-recap" style="display: none;">
+                重置相機
+            </button>
+
+            <br>
+
+            <button id="send-scan-btn" style="display: none;">
+                上傳掃描結果
+            </button>
+        </div>
+
+        <p id="scan-result" style="margin-top: 1rem;"></p>
+    </div>
+</div>
