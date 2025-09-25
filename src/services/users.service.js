@@ -5,28 +5,21 @@ import bcrypt from "bcrypt";
 /*
 Get registers by ID
 */
-export const getRegisterById = async (id) => {
+export const getRegister = async (fieldname, value) => {
     logger.info(`Search for id=${id}`);
-    const result = await sql`SELECT * FROM registers WHERE id = ${id}`;
+
+    let result = null;
+
+    if (fieldname == "id") {
+      result = await sql`SELECT * FROM registers WHERE id = ${value}`;
+    } else if (fieldname == "name") {
+      result = await sql`SELECT * FROM registers WHERE name = ${value}`;
+    } else if (fieldname == "email") {
+      result = await sql`SELECT * FROM registers WHERE email = ${value}`;
+    }
+
     return result[0] || null;
 }
-
-/*
-Get ID by registers
-*/
-export const getIdByRegister = async (fieldname, value) => {
-    logger.info(`Search for ${fieldname}=${value}`);
-    let result;
-    if (fieldname == "name") {
-      result = await sql`SELECT id FROM registers WHERE name = ${value}`;
-    }
-
-    if (fieldname == "email") {
-      result = await sql`SELECT id FROM registers WHERE email = ${value}`;
-    }
-
-    return result[0] || null;
-};
 
 /*
 Get ID by User
@@ -52,8 +45,8 @@ export const getUser = async (fieldname, value) => {
 /*
 Update registers
 */
-export const updateRegister = async (id, updates) => {
-    const existing = await getRegisterById(id);
+export const updateRegister = async (fieldname, value, updates) => {
+    const existing = await getRegister(fieldname, value);
     if (!existing) throw new Error("User not found");
 
     const setClauses = [];

@@ -1,7 +1,8 @@
 <div class="card">
     <div class="bar">
         <div class="group">
-            <button class="btn btn-chip" id="btn-setting"><span class="i">⚙️</span>系統設定</button>
+            <!-- <button class="btn btn-chip" id="btn-setting"><span class="i">⚙️</span>系統設定</button> -->
+            <button class="btn btn-chip" id="btn-setting" data-bs-toggle="modal" data-bs-target="#systemSettingModal"><span class="i">⚙️</span>系統設定</button>
             <button class="btn btn-chip" id="btn-account"><span class="i">🧩</span>帳號管理</button>
             <!-- <button class="btn btn-green" id="btn-gen"><span class="i">🔐</span>產生密碼</button> -->
             <!-- <button class="btn btn-red" id="btn-logout"><span class="i">🚪</span>登出</button> -->
@@ -144,4 +145,106 @@
             </form>
         </div>
     </div>
+</div>
+
+<div class="modal fade" id="systemSettingModal" tabindex="-1" aria-labelledby="systemSettingModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+
+      <div class="modal-body">
+        <!-- 系統設定 Toggle -->
+        <div class="section-toggle styled-toggle" data-bs-toggle="collapse" data-bs-target="#systemSettingCollapse"
+          role="button" aria-expanded="true" aria-controls="systemSettingCollapse">
+          <h5 class="toggle-title">
+            <i class="fas fa-chevron-down me-2 rotate-icon" data-target="#systemSettingCollapse"></i> 系統設定
+          </h5>
+        </div>
+
+        <!-- 系統設定內容 -->
+        <div id="systemSettingCollapse" class="collapse show">
+          <div class="modal-body">
+
+            <!-- 工作站設定 -->
+            <div class="config-section">
+              <h5 class="toggle-title">
+                <i class="fas fa-chevron-down me-2 rotate-icon"></i>
+                工作站設定
+              </h5>
+              <div class="config-subitems">
+                <div class="mb-3">
+                  <label class="form-label">超時秒數</label>
+                  <input
+                    type="text"
+                    id="expireTime"
+                    name="expireTime"
+                    class="form-control w-auto"
+                    style="width: 50%; display: inline-block;"
+                  />
+                  <span class="ms-2">秒</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- AI模型配置 -->
+            <div class="config-section">
+              <h5 class="toggle-title">
+                <i class="fas fa-chevron-down me-2 rotate-icon"></i>
+                AI模型配置
+              </h5>
+              <div class="config-subitems">
+                <div class="mb-3">
+                  <label class="form-label">模型版本</label>
+                  <input type="text" class="form-control" />
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">檢測閾值</label>
+                  <input type="text" class="form-control" />
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">模型準確度</label>
+                  <input type="text" class="form-control" />
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">模型更新通知</label>
+                  <input type="checkbox" class="form-check-input" />
+                </div>
+              </div>
+            </div>
+
+            <!-- 追蹤與提醒設定 -->
+            <div class="config-section">
+              <h5 class="toggle-title">
+                <i class="fas fa-chevron-down me-2 rotate-icon"></i>
+                追蹤與提醒設定
+              </h5>
+            </div>
+
+            <!-- 遠程醫療設定 -->
+            <div class="config-section">
+              <h5 class="toggle-title">
+                <i class="fas fa-chevron-down me-2 rotate-icon"></i>
+                遠程醫療設定
+              </h5>
+            </div>
+
+            <!-- 醫學資料庫管理 -->
+            <div class="config-section">
+              <h5 class="toggle-title">
+                <i class="fas fa-chevron-down me-2 rotate-icon"></i>
+                醫學資料庫管理
+              </h5>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+        <button type="button" class="btn btn-primary">儲存設定</button>
+      </div>
+
+    </div>
+  </div>
 </div>
