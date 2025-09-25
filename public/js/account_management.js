@@ -79,11 +79,11 @@ document.addEventListener("DOMContentLoaded", () => {
             const data = await res.json();
 
             if (!data.success) {
-                showModal(`編輯使用者失敗: ${data.message}`);
+                showModal(`${data.message}`);
                 return;
             }
 
-            showModal("編輯使用者成功", () => {
+            showModal(data.message, () => {
                 setTimeout(() => {
                     window.location.href = data.redirect; // 怎麼引入 data.name?
                 }, 1500);

@@ -12,7 +12,7 @@ import { signupSchema, signinSchema } from "#validations/auth.validation.js";
 import bcrypt from 'bcrypt';
 import jwt from "jsonwebtoken";
 import logger from '#config/logger.js';
-import { getUser, updateUser, updateRegister, updateUserTableFromRegister } from "#src/services/users.service.js";
+import { getUser, updateUser, updateRegister, updateUserTableFromRegister, deleteUser } from "#src/services/users.service.js";
 import { findRecord, findDiscardRecord } from "#src/services/records.service.js";
 import { movefiles, deletefiles } from "#utils/func.js";
 import sgMail from "@sendgrid/mail";
@@ -133,7 +133,7 @@ export const verify_register = async (req, res) => {
             // req.body.code
             // update status into user database
             register.status = "complete";
-            updated = updateRegister(id, register);
+            updated = updateRegister("id", id, register);
             updateUserTableFromRegister(id, name);
         }
 
@@ -719,7 +719,7 @@ export const edit_account = async (req, res) => {
         logger.info(`user: ${JSON.stringify(user)}`);
         return res.status(201).json({ success: true, message: "Edit account successfully", redirect: "/api/auth/account_management" });
     } else if (action === "delete") {
-        const user = await deleteUser(body);
+        const user = await deleteUser("name", body.name);
         logger.info(`user: ${JSON.stringify(user)}`);
         return res.status(201).json({ success: true, message: "Delete account successfully", redirect: "/api/auth/account_management" });
     }

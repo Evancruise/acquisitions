@@ -164,15 +164,21 @@ export const updateUser = async (fieldname, value, updates) => {
 /*
 Delete user
 */
-export const deleteUser = async (id) => {
-    const existing = await getUser("id", id);
+export const deleteUser = async (fieldname, value) => {
+    const existing = await getUser(fieldname, value);
 
     if (!existing) {
       throw new Error("User not found");
     }
 
-    await sql`DELETE FROM users WHERE id = ${id}`;
-    return { message: `User ${id} deleted successfully` };
+    if (fieldname == "id") {
+      await sql`DELETE FROM users WHERE id = ${value}`;
+    } else if (fieldname == "name") {
+      await sql`DELETE FROM users WHERE name = ${value}`;
+    } else if (fieldname == "email") {
+      await sql`DELETE FROM users WHERE email = ${value}`;
+    }
+    return { message: `User deleted successfully` };
 };
 
 /*
