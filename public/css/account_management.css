@@ -97,8 +97,7 @@ tbody tr:hover{ background:#eef9ff; }
   padding: 20px;
   border-radius: 5px;
 }
-/* footer */
-.footer{ text-align:center; color:#6aa8c8; font-size:13px; padding:8px 0 28px; }
+
 /* responsive */
 @media (max-width:880px){
   .bar{ flex-wrap:wrap; }

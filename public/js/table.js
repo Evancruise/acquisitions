@@ -40,7 +40,7 @@ export function renderUserTable(users, pageSize, currentPage) {
                       data-f-role="${u.role ?? ""}"
                       data-f-status="${u.status ?? ""}"
                       data-f-note="${u.note ?? ""}">
-                檢視
+                檢視 / 修改 / 刪除
               </button>
             </td>
         </tr>`;
