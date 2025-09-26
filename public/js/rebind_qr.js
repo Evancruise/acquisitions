@@ -57,6 +57,7 @@ document.addEventListener("DOMContentLoaded", () => {
             stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
             video.srcObject = stream;
             video.style.display = "block";
+            video.style.margin = "0 auto"; // 保證置中
             captureBtn.style.display = "block";
             reset_btn.style.display = "none";
             canvas.style.display = "none";
@@ -73,8 +74,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
             video.style.display = "none";
             captureBtn.style.display = "none";
-            reset_btn.style.display = "flex";
-            scanner_result.style.display = "flex";
+            reset_btn.style.display = "block";
+            scanner_result.style.display = "block";
 
             if (stream) {
                 stream.getTracks().forEach(track => track.stop());

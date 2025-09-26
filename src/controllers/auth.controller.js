@@ -23,6 +23,7 @@ import { getAllRecords } from "#services/records.service.js";
 import { getAllUsers } from "#src/services/users.service.js";
 import ExcelJS from "exceljs";
 import QRCode from "qrcode";
+import { config, default_config } from "#config/config.js";
 
 const upload = multer({ dest: "uploads/" });
 const upload_gb = multer({ dest: "uploads_gb/" });
@@ -680,13 +681,16 @@ export const account_management = async (req, res) => {
         logger.info(`grouped: ${JSON.stringify(grouped)}`);
     }
 
+    logger.info(`config: ${JSON.stringify(config)}`);
+
     return res.status(201).render("account_management", 
     { layout: "layout",  
       grouped_accounts: grouped, 
       today_date: (new Date()).toISOString().split("T")[0],
       priority: 1, 
       path: "/api/auth/account_management", 
-      token: token });
+      token: token,
+      config: config});
 };
 
 export const new_account = async (req, res) => {
@@ -727,6 +731,74 @@ export const edit_account = async (req, res) => {
     logger.error("edit_account error:", e);
     return res.status(409).json({ success: false, message: "Edit account failed" });
   }
+};
+
+export const apply_account_setting = async (req, res) => {
+    try {  
+        const body = req.body;
+        const action = body.action;
+        logger.info("body:", body);
+
+        if (action == "save") {
+            config.minPasswordLength = body.minPasswordLength;
+            config.passwordComplexity = body.passwordComplexity;
+            config.passwordExpiryDays = body.passwordExpiryDays;
+            config.accountLockThreshold = body.accountLockThreshold;
+            config.enableMFA = body.enableMFA;
+            config.mfaMethods = body.mfaMethods;
+            config.enableActivityMonitoring = body.enableActivityMonitoring;
+            config.anomalyThreshold = body.anomalyThreshold;
+            return res.status(201).json({ success: true, message: "Update system setting successfully", redirect: "/api/auth/account_management" });
+        } else if (action === "reset") {
+            config.minPasswordLength = default_config.minPasswordLength;
+            config.passwordComplexity = default_config.passwordComplexity;
+            config.passwordExpiryDays = default_config.passwordExpiryDays;
+            config.accountLockThreshold = default_config.accountLockThreshold;
+            config.enableMFA = default_config.enableMFA;
+            config.mfaMethods = default_config.mfaMethods;
+            config.enableActivityMonitoring = default_config.enableActivityMonitoring;
+            config.anomalyThreshold = default_config.anomalyThreshold;
+            return res.status(201).json({ success: true, message: "Reset system setting successfully", redirect: "/api/auth/account_management" });
+        } else if (action === "init") {
+            await deleteUserTable();     
+            await initUserTable();
+            await deleteRegisterTable();
+            await initRegisterTable();
+            return res.status(201).json({ success: true, message: "Init system setting successfully", redirect: "/api/auth/account_management" });
+        }
+    } catch (e) {
+        logger.error("apply_account_setting error:", e);
+        return res.status(409).json({ success: false, message: "Apply account setting failed" });
+    }
+};
+
+export const apply_system_setting = async (req, res) => {
+    try {  
+        const body = req.body;
+        logger.info("body:", body);
+
+        const action = body.action;
+
+        if (action === "save") {
+            config.expireTime = body.expireTime;
+            config.model_version = body.model_version;
+            config.threshold = body.threshold;
+            config.model_accuracy = body.model_accuracy;
+            config.update_inform = body.update_inform;
+            return res.status(201).json({ success: true, message: "Apply system setting successfully", redirect: "/api/auth/account_management" });
+        } else if (action === "reset") {
+            config.expireTime = default_config.expireTime;
+            config.model_version = default_config.model_version;
+            config.threshold = default_config.threshold;
+            config.model_accuracy = default_config.model_accuracy;
+            config.update_inform = default_config.update_inform;
+            return res.status(201).json({ success: true, message: "Reset system setting successfully", redirect: "/api/auth/account_management" });
+        }
+
+    } catch (e) {
+        logger.error("apply_system_setting error:", e);
+        return res.status(409).json({ success: false, message: "Apply system setting failed" });
+    }
 };
 
 export const rebind_page = async (req, res) => {

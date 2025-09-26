@@ -6,9 +6,15 @@ loadModal("modal-container");
 
 const account_form = document.getElementById("account_form");
 const add_account_form = document.getElementById("add_account_form");
+const account_setting_form = document.getElementById("account_setting_form");
+const account_setting_modal = document.getElementById("accountSettingModal");
+const system_setting_form = document.getElementById("system_setting_form");
+const system_setting_modal = document.getElementById("systemSettingModal");
 const table_wraps = document.querySelectorAll(".table-wrap");
 
 document.addEventListener("DOMContentLoaded", () => {
+    const configTag = document.getElementById("config-data");
+    const config = JSON.parse(configTag.textContent);
     const user_data = document.getElementById("users-data");
 
     if (!user_data) {
@@ -58,6 +64,42 @@ document.addEventListener("DOMContentLoaded", () => {
                 modal.querySelector("textarea[name='notes']").value = fNote    || '';
             });
         });
+    }
+
+    if (config) {
+        console.log("Loaded config:", config);
+
+        // 系統設定
+        document.getElementById("expireTime").value = config.expireTime || "";
+        document.getElementById("model_version").value = config.model_version || "";
+        document.getElementById("threshold").value = config.threshold || "";
+        document.getElementById("model_accuracy").value = config.model_accuracy || "";
+        document.getElementById("update_inform").checked = !!config.update_inform;
+
+        // 帳號設定
+        // 密碼最小長度
+        document.getElementById("minPasswordLength").value = config.minPasswordLength || "";
+
+        // 複雜度要求 (select)
+        document.getElementById("passwordComplexity").value = config.passwordComplexity || "low";
+
+        // 密碼過期天數
+        document.getElementById("passwordExpiryDays").value = config.passwordExpiryDays || "";
+
+        // 帳號鎖定閾值
+        document.getElementById("accountLockThreshold").value = config.accountLockThreshold || "";
+
+        // 啟用 MFA (checkbox)
+        document.getElementById("enableMFA").checked = !!config.enableMFA;
+
+        // MFA 方法 (select)
+        document.getElementById("mfaMethods").value = config.mfaMethods || "totp";
+
+        // 啟用活動監控
+        document.getElementById("enableActivityMonitoring").checked = !!config.enableActivityMonitoring;
+
+        // 異常活動閾值
+        document.getElementById("anomalyThreshold").value = config.anomalyThreshold || "";
     }
 
     if (account_form) {
@@ -122,6 +164,74 @@ document.addEventListener("DOMContentLoaded", () => {
                     window.location.href = data.redirect; // 怎麼引入 data.name?
                 }, 1500);
             });
+        });
+    }
+
+    if (account_setting_form) {
+        account_setting_form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(account_setting_form);
+
+            // 把觸發的按鈕補進 formData
+            if (e.submitter) {
+                formData.append(e.submitter.name, e.submitter.value);
+            }
+
+            const res = await fetch('/api/auth/apply_account_setting', {
+                method: 'POST',
+                body: formData,
+            });
+
+            const data = await res.json();
+            
+            if (data.success) {
+                showModal(data.message, () => {
+                    setTimeout(() => {
+                        window.location.href = data.redirect; // 怎麼引入 data.name?
+                    }, 1500);
+                }, () => {
+                    setTimeout(() => {
+                        window.location.href = data.redirect; // 怎麼引入 data.name?
+                    }, 1500);
+                });
+            } else {
+                showModal(`操作失敗: ${data.message}`);
+            }
+        });
+    }
+
+    if (system_setting_form) {
+        system_setting_form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(system_setting_form);
+
+            // 把觸發的按鈕補進 formData
+            if (e.submitter) {
+                formData.append(e.submitter.name, e.submitter.value);
+            }
+
+            const res = await fetch('/api/auth/apply_system_setting', {
+                method: 'POST',
+                body: formData,
+            });
+
+            const data = await res.json();
+
+            if (data.success) {
+                showModal(data.message, () => {
+                    setTimeout(() => {
+                        window.location.href = data.redirect; // 怎麼引入 data.name?
+                    }, 1500);
+                }, () => {
+                    setTimeout(() => {
+                        window.location.href = data.redirect; // 怎麼引入 data.name?
+                    }, 1500);
+                });
+            } else {
+                showModal(`操作失敗: ${data.message}`);
+            }
         });
     }
 });

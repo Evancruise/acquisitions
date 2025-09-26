@@ -27,6 +27,8 @@ import { register,
         account_management,
         new_account,
         edit_account,
+        apply_account_setting,
+        apply_system_setting,
         rebind_page,
         rebind_qr,
         scan_result} from '#controllers/auth.controller.js';
@@ -56,6 +58,8 @@ router.post("/export_data", upload.none(), export_data);
 router.get("/account_management", account_management);
 router.post("/edit_account", upload.none(), edit_account);
 router.post("/new_account", upload.none(), new_account);
+router.post("/apply_account_setting", upload.none(), apply_account_setting);
+router.post("/apply_system_setting", upload.none(), apply_system_setting);
 
 router.get("/rebind_page", rebind_page);
 router.get("/rebind-qr", rebind_qr);

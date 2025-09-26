@@ -2,7 +2,7 @@
     <div class="rebind-pwd-container" style="text-align: center;">
         <!-- 電腦版：顯示 QR Code -->
         <div class="form-group">
-            <img id="qr-image" src="/api/auth/rebind-qr" alt="QR Code" style="width: 250px;" />
+            <img id="qr-image" src="/api/auth/rebind-qr" alt="QR Code" style="width: 250px; align-items: center;" />
             <div style="margin-top: 0.5rem; font-size: 14px; color: #555;">
                 下次刷新倒數：<span id="countdown">30</span> 秒
             </div>
@@ -34,15 +34,10 @@
             
             <button id="capture-btn" style="margin-top:0.5rem;"> 拍照 </button>
             
-            <button id="send-scan-btn-recap" style="display: none;">
-                重置相機
-            </button>
-
-            <br>
-
-            <button id="send-scan-btn" style="display: none;">
-                上傳掃描結果
-            </button>
+            <div class="scan-btn-row">
+                <button id="send-scan-btn-recap" style="margin-top:0.5rem; text-align: center; align-items: center;">重置相機</button>
+                <button id="send-scan-btn" style="margin-top:0.5rem; text-align: center; align-items: center;">上傳掃描結果</button>
+            </div>
         </div>
 
         <p id="scan-result" style="margin-top: 1rem;"></p>
