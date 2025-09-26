@@ -11,10 +11,12 @@ const account_setting_modal = document.getElementById("accountSettingModal");
 const system_setting_form = document.getElementById("system_setting_form");
 const system_setting_modal = document.getElementById("systemSettingModal");
 const table_wraps = document.querySelectorAll(".table-wrap");
+const toggleBtn = document.getElementById("toggle-password");
 
 document.addEventListener("DOMContentLoaded", () => {
     const configTag = document.getElementById("config-data");
-    const config = JSON.parse(configTag.textContent);
+    let config = null;
+    if (configTag) { config = JSON.parse(configTag.textContent); }
     const user_data = document.getElementById("users-data");
 
     if (!user_data) {
@@ -39,6 +41,14 @@ document.addEventListener("DOMContentLoaded", () => {
     // 初始渲染
     update(1);
 
+    if (toggleBtn) {
+        toggleBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        const input = document.getElementById("password-field");
+        input.type = input.type === "password" ? "text" : "password";
+        });
+    }
+
     if (table_wraps) {
         table_wraps.forEach(wrap => {
             wrap.addEventListener('click', (e) => {
@@ -53,8 +63,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 const modal = document.getElementById("curAccountModal");
 
-                console.log(modal, modal?.querySelector("input[name='account']"));
-                
                 modal.querySelector("input[name='email']").value = fAccount || '';
                 modal.querySelector("input[name='name']").value    = fName    || '';
                 modal.querySelector("input[name='password']").value    = fPassword    || '';

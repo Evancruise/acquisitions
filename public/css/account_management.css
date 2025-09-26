@@ -111,122 +111,96 @@ tbody tr:hover{ background:#eef9ff; }
 }
 
   /* ===== Modal 基本樣式（僅作用於 #curAccountModal） ===== */
-#curAccountModal .modal-dialog{
-  max-width: 720px;
+/* Modal header 漸層與陰影 */
+.custom-modal-header {
+  background-color: #2a5d9f;
+  color: white;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
 }
 
-#curAccountModal .modal-content{
-  border: 0;
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 20px 60px rgba(15,40,70,.25);
-  background: #fff;
+.custom-modal-header .btn-close {
+  filter: invert(1);
 }
 
-/* 若 form 有用 .card，避免出現雙層卡片外觀 */
-#curAccountModal #account_form.card{
-  background: transparent;
-  border: 0;
-  box-shadow: none;
-  padding: 0;
-}
-
-/* 標頭與標題 */
-#curAccountModal .custom-modal-header{
-  padding: 16px 20px;
-  background: linear-gradient(135deg, #e9f8ff 0%, #d7f0ff 100%);
-  border-bottom: 1px solid #d4e3ee;
-}
-
-#curAccountModal .modal-title{
+/* 標題動畫效果 */
+.animated-title {
   display: flex;
   align-items: center;
-  gap: 10px;
-  color: #1686c1;
-  font-weight: 800;
-  letter-spacing: .2px;
+  gap: 8px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
 }
 
-/* 標題淡入動態（Font Awesome 的 fa-beat 會照常運作，這是額外的整體標題進場） */
-@keyframes titleFloatIn{
-  from{ opacity: 0; transform: translateY(6px); }
-  to{   opacity: 1; transform: translateY(0); }
+/* 表單排版 */
+#account_form .form-inline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-#curAccountModal .animated-title{
-  animation: titleFloatIn .35s ease both;
+#account_form .form-label {
+  flex: 0 0 80px;
+  font-weight: 500;
+  color: #333;
 }
 
-#curAccountModal .modal-body{
-  padding: 18px 20px 6px;
+#account_form .form-control,
+#account_form .form-select,
+#account_form textarea {
+  flex: 1;
+  border-radius: 6px;
+  transition: all 0.2s ease-in-out;
 }
 
-/* Label 與表單控制項 */
-#curAccountModal .form-label{
-  font-weight: 700;
-  font-size: .9rem;
-  color: #466a84;
+/* 輸入框 hover / focus 效果 */
+#account_form .form-control:focus,
+#account_form .form-select:focus,
+#account_form textarea:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 4px rgba(13, 110, 253, 0.3);
 }
 
-#curAccountModal .form-control,
-#curAccountModal .form-select{
-  border-radius: 12px;
-  border: 1px solid #d4e3ee;
-  padding: 10px 12px;
-  box-shadow: none;
-  transition: border-color .15s ease, box-shadow .15s ease;
+/* 備註 textarea */
+#account_form textarea {
+  resize: none;
 }
 
-#curAccountModal .form-control:focus,
-#curAccountModal .form-select:focus{
-  border-color: #1596d4;
-  box-shadow: 0 0 0 .2rem rgba(21,150,212,.15);
+/* 按鈕區塊 */
+#account_form .btn {
+  min-width: 80px;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: transform 0.15s ease-in-out;
 }
 
-/* 底部按鈕區 */
-#curAccountModal .modal-content .mt-3{
-  padding: 0 20px 20px;
+#account_form .btn:hover {
+  transform: translateY(-2px);
 }
 
-#curAccountModal .btn-primary{
-  background: #1596d4;
-  border-color: #1596d4;
-}
-#curAccountModal .btn-primary:hover{
-  background: #0f79ab;
-  border-color: #0f79ab;
-}
-#curAccountModal .btn-secondary{
-  background: #eaf2f8;
-  color: #275a74;
-  border-color: #eaf2f8;
-}
-#curAccountModal .btn-secondary:hover{
-  background: #dbeaf4;
-  color: #1f516a;
+#account_form .btn-primary {
+  background: #0d6efd;
+  border: none;
 }
 
-/* 彈出動畫（覆蓋 Bootstrap 預設 fade 的位移） */
-#curAccountModal.modal.fade .modal-dialog{
-  transform: translateY(24px);
-  transition: transform .25s ease, opacity .25s ease;
-}
-#curAccountModal.modal.show .modal-dialog{
-  transform: none;
+#account_form .btn-primary:hover {
+  background: #0b5ed7;
 }
 
-/* 小螢幕優化 */
-@media (max-width: 576px){
-  #curAccountModal .modal-dialog{ margin: .75rem; }
-  #curAccountModal .modal-title{ font-size: 1rem; }
+#account_form .btn-secondary {
+  background: #6c757d;
+  border: none;
+}
+
+#account_form .btn-secondary:hover {
+  background: #5c636a;
 }
 
 /* Modal 調整 */
-#systemSettingModal .modal-content {
+.modal-content {
   border-radius: 12px;
-  border: none;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2);
-  background: #fff;
+  border: 1px solid #d9e4f5;
+  box-shadow: 0 6px 20px rgba(42, 93, 159, 0.15);
 }
 
 #systemSettingModal .modal-body {

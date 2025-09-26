@@ -3,6 +3,14 @@ import { body, param } from "express-validator";
 import logger from "#config/logger.js";
 import { updateUserSchema, userIdSchema } from "#validations/users.validation.js";
 
+export function generateToken(user) {
+  return jwt.sign(
+    { id: user.id, name: user.name },
+    process.env.JWT_SECRET,
+    { expiresIn: "30m" }   // 30 分鐘過期
+  );
+};
+
 export const authorize = (roles = []) => {
   return (req, res, next) => {
     if (!roles.includes(req.role)) {
@@ -45,6 +53,8 @@ export const validateUpdateUser = (req, res, next) => {
 export const authenticateToken = (req, res, next) => {
   let token = req.cookies?.token;
 
+  if (!token) return res.status(401).json({ error: "No token provided" });
+
   console.log("🔍 Raw token from cookie:", token, "Type:", typeof token);
 
   if (!token && req.headers.authorization?.startsWith("Bearer ")) {
@@ -72,6 +82,20 @@ export const authenticateToken = (req, res, next) => {
     return res.status(403).json({ error: "Invalid or expired token" });
   }
 };
+
+/*
+export const authMiddleware = (req, res, next) {
+  let token = req.cookies?.token;
+
+  if (!token) return res.status(401).json({ error: "No token provided" });
+
+  jwt.verify(token.trim(), process.env.JWT_SECRET, (err, user) => {
+    if (err) return res.status(403).json({ error: "Invalid or expired token" });
+      req.user = user;
+    next();
+  });
+};
+*/
 
 export const authorizeRoles = (...roles) => {
   return (req, res, next) => {

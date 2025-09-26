@@ -24,6 +24,7 @@ import { getAllUsers } from "#src/services/users.service.js";
 import ExcelJS from "exceljs";
 import QRCode from "qrcode";
 import { config, default_config } from "#config/config.js";
+import { generateToken } from "#middleware/users.middleware.js";
 
 const upload = multer({ dest: "uploads/" });
 const upload_gb = multer({ dest: "uploads_gb/" });
@@ -66,9 +67,11 @@ export const request = async (req, res) => {
   try {
     const { name, email } = req.body;
 
-    const token = jwt.sign({ email, name }, 
+    const token = jwt.sign(
+        { email, name }, 
         process.env.JWT_SECRET,
-       { expiresIn: "1h" });
+        { expiresIn: process.env.JWT_EXPIRES_IN }
+    );
     
     logger.info(`createRegister: name: ${name} email: ${email}`);
     const register = await createRegister({ name, email });
@@ -222,7 +225,7 @@ export const signup = async (req, res, next) => {
 // ✅ 登入
 export const loginPage = async(req, res) => {
     res.render("loginPage", { layout: false });
-}
+};
 
 export const signin = async (req, res, next) => {
   // try {
@@ -396,6 +399,7 @@ export const new_record = [
   async (req, res) => {
     const body = req.body;
     const files = req.files;
+    generateToken(body);
 
     logger.info("req.headers:", req.headers);
     logger.info("body:", body);
@@ -475,6 +479,7 @@ export const edit_record = [
   async (req, res) => {
     const body = req.body;
     const files = req.files;
+    generateToken(body);
 
     logger.info("req.headers:", req.headers);
     logger.info("body:", body);
@@ -696,6 +701,7 @@ export const account_management = async (req, res) => {
 export const new_account = async (req, res) => {
   try {
     const body = req.body;
+    generateToken(body);
     const { name, email, password, role, unit, notes } = body;
 
     logger.info("body:", body);
@@ -714,6 +720,9 @@ export const new_account = async (req, res) => {
 export const edit_account = async (req, res) => {
   try {  
     const body = req.body;
+
+    generateToken(body);
+
     const action = body.action;
 
     logger.info("body:", body);
@@ -736,6 +745,9 @@ export const edit_account = async (req, res) => {
 export const apply_account_setting = async (req, res) => {
     try {  
         const body = req.body;
+
+        generateToken(body);
+
         const action = body.action;
         logger.info("body:", body);
 
@@ -775,6 +787,9 @@ export const apply_account_setting = async (req, res) => {
 export const apply_system_setting = async (req, res) => {
     try {  
         const body = req.body;
+
+        generateToken(body);
+
         logger.info("body:", body);
 
         const action = body.action;
@@ -890,6 +905,9 @@ export const recycle_record = [
   upload_gb.any(), 
   async (req, res) => {
     const body = req.body;
+
+    generateToken(body);
+
     const files = req.files;
 
     const token = body.token;
