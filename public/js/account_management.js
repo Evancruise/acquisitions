@@ -14,7 +14,8 @@ const table_wraps = document.querySelectorAll(".table-wrap");
 
 document.addEventListener("DOMContentLoaded", () => {
     const configTag = document.getElementById("config-data");
-    const config = JSON.parse(configTag.textContent);
+    let config = null;
+    if (configTag) { config = JSON.parse(configTag.textContent); }
     const user_data = document.getElementById("users-data");
 
     if (!user_data) {
@@ -53,8 +54,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 const modal = document.getElementById("curAccountModal");
 
-                console.log(modal, modal?.querySelector("input[name='account']"));
-                
                 modal.querySelector("input[name='email']").value = fAccount || '';
                 modal.querySelector("input[name='name']").value    = fName    || '';
                 modal.querySelector("input[name='password']").value    = fPassword    || '';

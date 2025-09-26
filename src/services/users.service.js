@@ -6,8 +6,7 @@ import bcrypt from "bcrypt";
 Get registers by ID
 */
 export const getRegister = async (fieldname, value) => {
-    logger.info(`Search for id=${id}`);
-
+    logger.info(`Search for ${fieldname}=${value}`);
     let result = null;
 
     if (fieldname == "id") {
@@ -62,7 +61,7 @@ export const updateRegister = async (fieldname, value, updates) => {
     
     const updated = await sql`UPDATE registers
     SET name = ${updates.name}, email = ${updates.email}, role = ${updates.role}, status = ${updates.status}
-    WHERE id = ${id}
+    WHERE id = ${updates.id}
     RETURNING id, name, email, status
     `;
 

@@ -11,6 +11,7 @@ import recordsRoutes from "#routes/records.route.js";
 
 import bodyParser from "body-parser";
 import expressLayouts from "express-ejs-layouts";
+import session from "express-session";
 
 // import securityMiddleWare from '#middleware/security.middleware.js';
 import dotenv from "dotenv";
@@ -29,6 +30,14 @@ app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+app.use(session({
+    secret: process.env.SESSION_SECRET || 'default_secret',
+    resave: false,
+    saveUninitialized: true,
+    cookie: { maxAge: 30 * 60 * 1000 } // 在生產環境中使用安全 cookie
+}));
+
 app.use(morgan('combined', { stream: { write: (message) => logger.info(message.trim())}}));
 app.set("view engine", "ejs");
 // app.use(securityMiddleWare);
