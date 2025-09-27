@@ -72,10 +72,20 @@ export const authenticateToken = (req, res, next) => {
   logger.info(`VERIFY secret length: ${process.env.JWT_SECRET.length}`);
   logger.info(`VERIFY secret hex: ${Buffer.from(process.env.JWT_SECRET).toString("hex")}`);
 
-  try {
-    const decoded = jwt.verify(token.trim(), process.env.JWT_SECRET);
+  /*
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    if (err) return res.status(401).json({ message: "登入已過期，請重新登入" });
     req.user = decoded;
-    console.log("✅ Verified user:", decoded);
+    next();
+  });
+  */
+
+  try {
+    jwt.verify(token.trim(), process.env.JWT_SECRET, (err, decoded) => {
+    if (err) return res.status(401).json({ message: "登入已過期，請重新登入" });
+        req.user = decoded;
+        console.log("✅ Verified user:", decoded);
+    });
     next();
   } catch (err) {
     console.error("❌ JWT verify error:", err.message);

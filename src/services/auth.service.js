@@ -65,7 +65,7 @@ export const createUsersTable = async () => {
         email VARCHAR(255) UNIQUE NOT NULL,
         password TEXT,
         role VARCHAR(50) DEFAULT 'tester',
-        unit VARCHAR(100),
+        unit VARCHAR(100) DEFAULT 'personal',
         note TEXT,
         status VARCHAR(50) DEFAULT 'deactivated',
         created_at TIMESTAMP DEFAULT NOW(),
@@ -73,7 +73,7 @@ export const createUsersTable = async () => {
       )
     `;
 
-    const admin_user = await createUser({ name: "admin", email: "admin@gmail.com", password: process.env.DB_PASSWORD, role: "system administrator", note: "none" });
+    const admin_user = await createUser({ name: "admin", email: "admin@gmail.com", password: process.env.DB_PASSWORD, role: "system manager", note: "none" });
 
     console.log("✅ users 資料表建立完成");
   } catch (e) {
