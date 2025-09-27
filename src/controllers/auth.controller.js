@@ -228,7 +228,7 @@ export const loginPage = async(req, res) => {
 };
 
 export const signin = async (req, res, next) => {
-  // try {
+  try {
 
     logger.info(`req.body: ${JSON.stringify(req.body)}`);
     const validationResult = signinSchema.safeParse(req.body);
@@ -276,7 +276,7 @@ export const signin = async (req, res, next) => {
     const token = jwt.sign(
       { id: user.id, name: user.name, email: user.email, password: user.password, role: user.role },
       process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN },
+      { expiresIn: config.expireTime },
     );
 
     res.cookie("token", token, {
@@ -299,10 +299,12 @@ export const signin = async (req, res, next) => {
         token: token,
       },
     });
-  //} catch (e) {
-  //  logger.error("Signin error", e);
-  //  next(e);
-  //}
+  } catch (e) {
+    logger.error("Signin error", e);
+    return res.status(400).json({
+      success: false, 
+      message: `Login Failed ${e.message}`})
+  }
 };
 
 // ✅ 登出
@@ -312,6 +314,19 @@ export const signout = (req, res) => {
   res.clearCookie("SameSite");
   logger.info("✅ User signed out");
   res.status(200).render("loginPage", { layout: false, message: "Logged out successfully" });
+};
+
+function priority_from_role(role) {
+  let priority = -1;
+  if (role == "tester") {
+    priority = 3;
+  } else if (role == "resource manager") {
+    priority = 2;
+  } else if (role == "system manager") {
+    priority = 1;
+  }
+  logger.info(`priority = ${priority}`);
+  return priority;
 };
 
 // dashboard 首頁
@@ -325,7 +340,7 @@ export const dashboard = (req, res) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     logger.info(`decoded.name: ${decoded.name}`);
 
-    res.render("dashboard", { name: decoded.name, path: "/api/auth/dashboard", priority: 1, layout: "layout" });
+    res.render("dashboard", { name: decoded.name, path: "/api/auth/dashboard", priority: priority_from_role(decoded.role), layout: "layout" });
   } catch (err) {
     console.error("JWT 驗證失敗:", err);
     return res.redirect("/api/auth/loginPage");
@@ -384,7 +399,7 @@ export const record = async (req, res) => {
     return res.status(201).render("record", 
     { layout: "layout", 
       grouped_records: grouped, 
-      priority: 1, 
+      priority: priority_from_role(decoded.role), 
       path: "/api/auth/record", 
       id: decoded.id, 
       patient_id: `${decoded.id}-${length}`,
@@ -579,6 +594,10 @@ export const record_search = async (req, res) => {
 
     const allRecords = await getAllRecords();
 
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    logger.info(`decoded: ${JSON.stringify(decoded)}`);
+    logger.info(`decoded.role: ${decoded.role}`);
+
     logger.info(`allRecords: ${JSON.stringify(allRecords)}`);
 
     let length = 0;
@@ -609,7 +628,7 @@ export const record_search = async (req, res) => {
     { layout: "layout",  
       grouped_records: grouped, 
       today_date: (new Date()).toISOString().split("T")[0],
-      priority: 1, 
+      priority: priority_from_role(decoded.role), 
       path: "/api/auth/record_search", 
       token: token });
 };
@@ -652,50 +671,58 @@ export const export_data = async (req, res) => {
 };
 
 export const account_management = async (req, res) => {
-    const token = req.cookies.token;  // 從 cookie 拿 token
-    if (!token) {
-        return res.redirect("/api/auth/loginPage"); // 沒有 token 回登入頁
+    try {
+      const token = req.cookies.token;  // 從 cookie 拿 token
+      if (!token) {
+          return res.redirect("/api/auth/loginPage"); // 沒有 token 回登入頁
+      }
+
+      const allUsers = await getAllUsers();
+      logger.info(`allUsers: ${JSON.stringify(allUsers)}`);
+
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      logger.info(`decoded: ${JSON.stringify(decoded)}`);
+      logger.info(`decoded.role: ${decoded.role}`);
+
+      let length = 0;
+
+      let grouped = {};
+
+      if (allUsers) {
+          // 1. 排序 (依 created_at 從新到舊)
+          allUsers.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+          // 假設 record 是陣列
+          length = Object.keys(allUsers).length;
+
+          // 2. 分組 (key = YYYY-MM-DD)
+          grouped = allUsers.reduce((acc, item) => {
+            const dateName = item.name
+            logger.info(`dateName: ${dateName}`);
+
+            if (!acc[dateName]) {
+              acc[dateName] = [];
+            }
+            acc[dateName].push(item);
+            return acc;
+          }, {});
+          logger.info(`grouped: ${JSON.stringify(grouped)}`);
+      }
+
+      logger.info(`config: ${JSON.stringify(config)}`);
+
+      return res.status(201).render("account_management", 
+      { layout: "layout",  
+        grouped_accounts: grouped, 
+        today_date: (new Date()).toISOString().split("T")[0],
+        priority: priority_from_role(decoded.role), 
+        path: "/api/auth/account_management", 
+        token: token,
+        config: config});
+    } catch(err) {
+      console.log("Error when accessing to account management webpage");
+      return res.redirect("/api/auth/loginPage");
     }
-
-    const allUsers = await getAllUsers();
-
-    logger.info(`allUsers: ${JSON.stringify(allUsers)}`);
-
-    let length = 0;
-
-    let grouped = {};
-
-    if (allUsers) {
-        // 1. 排序 (依 created_at 從新到舊)
-        allUsers.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-
-        // 假設 record 是陣列
-        length = Object.keys(allUsers).length;
-
-        // 2. 分組 (key = YYYY-MM-DD)
-        grouped = allUsers.reduce((acc, item) => {
-          const dateName = item.name
-          logger.info(`dateName: ${dateName}`);
-
-          if (!acc[dateName]) {
-            acc[dateName] = [];
-          }
-          acc[dateName].push(item);
-          return acc;
-        }, {});
-        logger.info(`grouped: ${JSON.stringify(grouped)}`);
-    }
-
-    logger.info(`config: ${JSON.stringify(config)}`);
-
-    return res.status(201).render("account_management", 
-    { layout: "layout",  
-      grouped_accounts: grouped, 
-      today_date: (new Date()).toISOString().split("T")[0],
-      priority: 1, 
-      path: "/api/auth/account_management", 
-      token: token,
-      config: config});
 };
 
 export const new_account = async (req, res) => {
@@ -772,10 +799,10 @@ export const apply_account_setting = async (req, res) => {
             config.anomalyThreshold = default_config.anomalyThreshold;
             return res.status(201).json({ success: true, message: "Reset system setting successfully", redirect: "/api/auth/account_management" });
         } else if (action === "init") {
-            await deleteUserTable();     
-            await initUserTable();
-            await deleteRegisterTable();
-            await initRegisterTable();
+            removeUserTable();    
+            createUsersTable();
+            removeRegisterTable();
+            createRegisterTable();
             return res.status(201).json({ success: true, message: "Init system setting successfully", redirect: "/api/auth/account_management" });
         }
     } catch (e) {
@@ -821,7 +848,12 @@ export const rebind_page = async (req, res) => {
     if (!token) {
         return res.redirect("/api/auth/loginPage"); // 沒有 token 回登入頁
     }
-    return res.status(201).render("rebind_page", { layout: "layout", priority: 1, path: "/api/auth/rebind_page", token: token });
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    logger.info(`decoded: ${JSON.stringify(decoded)}`);
+    logger.info(`decoded.role: ${decoded.role}`);
+
+    return res.status(201).render("rebind_page", { layout: "layout", priority: priority_from_role(decoded.role), path: "/api/auth/rebind_page", token: token });
 };
 
 export const rebind_qr = async (req, res) => {
@@ -892,7 +924,7 @@ export const recycle_bin = async (req, res) => {
     return res.status(201).render("recycle_bin", 
     { layout: "layout", 
       grouped_records: grouped, 
-      priority: 1, 
+      priority: priority_from_role(decoded.role), 
       path: "/api/auth/recycle_bin", 
       id: decoded.id, 
       patient_id: `${decoded.id}-${length}`,
@@ -1031,7 +1063,7 @@ export const quickchangepwd = (req, res) => {
     return res.status(200).render(
         "quick_changepwd", { 
             path: "/api/auth/quick_changepwd", 
-            priority: 1, 
+            priority: priority_from_role(decoded.role), 
             layout: "layout", 
             name: decoded.name,
             email: decoded.email });
