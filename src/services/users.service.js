@@ -99,7 +99,7 @@ export const updateUserTableFromRegister = async (id, name) => {
 /*
 Update user
 */
-export const updateUser = async (fieldname, value, updates) => {
+export const updateUser = async (fieldname, value = null, updates = null) => {
     const existing = await getUser(fieldname, value);
 
     logger.info(`existing: ${JSON.stringify(existing)}`);
@@ -147,7 +147,7 @@ export const updateUser = async (fieldname, value, updates) => {
     logger.info("applying update sql command");
     
     const updated = await sql`UPDATE users
-    SET name = ${updates.name}, email = ${updates.email}, role = ${updates.role}, password = ${updates.password}, unit = ${updates.unit}, updated_at = NOW()
+    SET name = ${updates.name}, email = ${updates.email}, role = ${updates.role}, password = ${updates.password}, unit = ${updates.unit}, updated_at = NOW() AT TIME ZONE timezone
     WHERE id = ${existing.id}
     RETURNING id, name, email, role, unit, password, created_at, updated_at
     `;
@@ -193,14 +193,83 @@ export const getAllUsers = async () => {
             role,
             unit,
             password,
-            created_at,
-            updated_at
+            created_at AT TIME ZONE timezone AS created_local,
+            updated_at AT TIME ZONE timezone AS updated_local,
+            allowed_loggin_at AT TIME ZONE timezone AS allowed_local,
           FROM users
         `;
         return result;
     } catch (e) {
         logger.error("Error getting users", e);
         throw e;
+    }
+};
+
+/*
+Check for user login authorization
+*/
+export const check_user_login = async (fieldname, value = null) => {
+    let allowed = false;  
+
+    if (fieldname == "name") {
+        allowed = await sql`SELECT * FROM users
+        WHERE name = ${value}
+        AND allowed_loggin_at <= NOW();`;
+    } else if (fieldname == "email") {
+        allowed = await sql`SELECT * FROM users
+        WHERE email = ${value}
+        AND allowed_loggin_at <= NOW();`;
+    }
+
+    logger.info(`allowed_loggin: ${allowed}`);
+    return allowed;
+};
+
+export const updateUserPassword = async (flag = false, fieldname, value = null) => {
+
+    if (flag == false) 
+    {
+        if (fieldname == "name") 
+        {
+            await sql`UPDATE users
+            SET retry_times = retry_times - 1,
+                updated_at = NOW(),
+                allowed_loggin_at = CASE
+                    WHEN retry_times - 1 <= 0
+                    THEN NOW() + INTERVAL '10 minutes'
+                    ELSE allowed_loggin_at
+                END
+            WHERE name = ${value};`;
+        } 
+        else if (fieldname == "email") 
+        {
+            await sql`UPDATE users
+            SET retry_times = retry_times - 1,
+                updated_at = NOW(),
+                allowed_loggin_at = CASE
+                    WHEN retry_times - 1 <= 0
+                    THEN NOW() + INTERVAL '10 minutes'
+                    ELSE allowed_loggin_at
+                END
+            WHERE email = ${value};`;
+        }
+    } else {
+        if (fieldname == "name") 
+        {
+            await sql`UPDATE users
+            SET retry_times = 5,
+                updated_at = NOW(),
+                allowed_loggin_at = NOW()
+            WHERE name = ${value};`;
+        }
+        else if (fieldname == "email") 
+        {
+            await sql`UPDATE users
+            SET retry_times = 5,
+                updated_at = NOW(),
+                allowed_loggin_at = NOW()
+            WHERE email = ${value};`;
+        }
     }
 };
 

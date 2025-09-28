@@ -42,7 +42,8 @@ export const createRegisterTable = async () => {
         role VARCHAR(50) DEFAULT 'tester',
         status VARCHAR(50) DEFAULT 'pending',
         created_at TIMESTAMP DEFAULT NOW(),
-        expired_at TIMESTAMP DEFAULT NOW()
+        expired_at TIMESTAMP DEFAULT NOW(),
+        timezone VARCHAR(50) DEFAULT 'UTC'
       )
     `;
 
@@ -64,12 +65,15 @@ export const createUsersTable = async () => {
         name VARCHAR(100) UNIQUE NOT NULL,
         email VARCHAR(255) UNIQUE NOT NULL,
         password TEXT,
+        retry_times INTEGER DEFAULT 5,
         role VARCHAR(50) DEFAULT 'tester',
         unit VARCHAR(100) DEFAULT 'personal',
         note TEXT,
         status VARCHAR(50) DEFAULT 'deactivated',
-        created_at TIMESTAMP DEFAULT NOW(),
-        updated_at TIMESTAMP DEFAULT NOW()
+        created_at TIMESTAMPTZ DEFAULT NOW(),       
+        updated_at TIMESTAMPTZ DEFAULT NOW(),      
+        allowed_loggin_at TIMESTAMPTZ DEFAULT NOW(),
+        timezone VARCHAR(50) DEFAULT 'UTC'          
       )
     `;
 

@@ -130,6 +130,7 @@
                 <br>
 
                 <!-- 動作按鈕 -->
+                <!--
                 <div style="display: flex; justify-content: space-between;">
                     <button type="submit" id="infer" name="action" value="infer" class="btn btn-secondary btn-lg" style="width: 48%;">
                     <i class="fas fa-camera-retro"></i> 開始辨識
@@ -143,6 +144,7 @@
                         <i class="far fa-file-alt"></i>查看辨識結果
                     </button>
                 </div>
+                -->
             </div>
 
             <!-- 底部按鈕 -->
@@ -159,6 +161,7 @@
 <!-- 編輯 Modal 彈窗 -->
 <div class="modal fade" id="editRecordModal" tabindex="-1" aria-labelledby="editRecordModalLabel" aria-hidden="true">
     <div class="modal-dialog">
+        <div class="modal-content">
         <form method="POST" enctype="multipart/form-data" action="/api/auth/edit_record" class="card p-4" id="edit_form">
             <div class="modal-header custom-modal-header">
                 <h5 class="modal-title animated-title" id="editRecordModalLabel">
@@ -258,12 +261,14 @@
                 </button>
             </div>
         </form>
+        </div>
     </div>
 </div>
 
 <!-- 辨識結果 Modal 彈窗 -->
 <div class="modal fade" id="resultRecordModal" tabindex="-1" aria-labelledby="resultRecordModalLabel" aria-hidden="true">
     <div class="modal-dialog">
+        <div class="modal-content">
         <form method="POST" enctype="multipart/form-data" action="/record/result/{{ user_id }}" class="card p-4" id="result_form">
             <div class="modal-header custom-modal-header">
                 <h5 class="modal-title animated-title" id="resultRecordModalLabel">
@@ -326,9 +331,7 @@
             <div class="modal-footer-1">
                 <button type="button" 
                         id="btnGoBack" 
-                        class="btn btn-primary" 
-                        data-bs-toggle="modal" 
-                        data-bs-target="#newRecordModal">
+                        class="btn btn-primary">
                     <i class="fas fa-arrow-alt-circle-left"></i> 回上一頁
                 </button>
 
@@ -338,5 +341,6 @@
                 </button>
             </div>
         </form>
+        </div>
     </div>
 </div>

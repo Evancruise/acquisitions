@@ -12,7 +12,7 @@ import { signupSchema, signinSchema } from "#validations/auth.validation.js";
 import bcrypt from 'bcrypt';
 import jwt from "jsonwebtoken";
 import logger from '#config/logger.js';
-import { getUser, updateUser, updateRegister, updateUserTableFromRegister, deleteUser } from "#src/services/users.service.js";
+import { getUser, updateUser, updateRegister, updateUserTableFromRegister, deleteUser, check_user_login, updateUserPassword } from "#src/services/users.service.js";
 import { findRecord, findDiscardRecord } from "#src/services/records.service.js";
 import { movefiles, deletefiles } from "#utils/func.js";
 import sgMail from "@sendgrid/mail";
@@ -25,6 +25,7 @@ import ExcelJS from "exceljs";
 import QRCode from "qrcode";
 import { config, default_config } from "#config/config.js";
 import { generateToken } from "#middleware/users.middleware.js";
+import { DateTime } from "luxon";
 
 const upload = multer({ dest: "uploads/" });
 const upload_gb = multer({ dest: "uploads_gb/" });
@@ -263,9 +264,34 @@ export const signin = async (req, res, next) => {
     logger.info(`password: ${password}`);
     logger.info(`user.password: ${user.password}`);
 
+    /*
+    const check_allowed_loggin = await check_user_login("name", user.name);
+
+    if (!check_allowed_loggin) {
+        return res.status(403).json({ success: false, message: "Account locked. Try again later." });
+    }
+    */
+
+    logger.info(`new Date(user.allowed_loggin_at): ${new Date(user.allowed_loggin_at)} | new Date(): ${new Date()}`);
+  
+    if (new Date(user.allowed_loggin_at) > new Date()) {
+
+      const unlockTime = DateTime.fromJSDate(user.allowed_loggin_at)
+                               .setZone(user.timezone || "UTC")
+                               .toFormat("yyyy-MM-dd HH:mm:ss");
+
+      return res.status(403).json({
+          error: "Account locked. Try again later.",
+          message: `Account locked until ${unlockTime} (${user.timezone})`,
+      });
+    }
+
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) {
-      return res.status(401).json({ success: false, error: "Invalid credentials", message: "Wrong password" });
+        await updateUserPassword(false, "name", user.name);
+        return res.status(401).json({ success: false, message: `Wrong password. Please login again (remaining times: ${user.retry_times})` });
+    } else {
+        await updateUserPassword(true, "name", user.name);
     }
 
     logger.info(`Signing with: ${process.env.JWT_SECRET}`);
@@ -384,7 +410,12 @@ export const record = async (req, res) => {
         // 2. 分組 (key = YYYY-MM-DD)
         grouped = record.reduce((acc, item) => {
           logger.info(`item.created_at: ${item.created_at}`);
-          const dateKey = item.created_at.toISOString().split("T")[0] // Date → YYYY-MM-DD
+
+          const dateKey = DateTime.fromJSDate(item.created_at)
+                               .setZone(item.timezone || "UTC")
+                               .toFormat("yyyy-MM-dd");
+
+          // const dateKey = item.created_at.toISOString().split("T")[0] // Date → YYYY-MM-DD
           logger.info(`dateKey: ${dateKey}`);
 
           if (!acc[dateKey]) {
@@ -720,7 +751,7 @@ export const account_management = async (req, res) => {
         token: token,
         config: config});
     } catch(err) {
-      console.log("Error when accessing to account management webpage");
+      console.log("account_management error: ", err.message);
       return res.redirect("/api/auth/loginPage");
     }
 };
@@ -844,16 +875,21 @@ export const apply_system_setting = async (req, res) => {
 };
 
 export const rebind_page = async (req, res) => {
-    const token = req.cookies.token;  // 從 cookie 拿 token
-    if (!token) {
-        return res.redirect("/api/auth/loginPage"); // 沒有 token 回登入頁
+    try {
+        const token = req.cookies.token;  // 從 cookie 拿 token
+        if (!token) {
+            return res.redirect("/api/auth/loginPage"); // 沒有 token 回登入頁
+        }
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        logger.info(`decoded: ${JSON.stringify(decoded)}`);
+        logger.info(`decoded.role: ${decoded.role}`);
+
+        return res.status(201).render("rebind_page", { layout: "layout", priority: priority_from_role(decoded.role), path: "/api/auth/rebind_page", token: token });
+    } catch (err) {
+        logger.info(`rebind_page error: `, err.message);
+        return res.redirect("/api/auth/loginPage");
     }
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    logger.info(`decoded: ${JSON.stringify(decoded)}`);
-    logger.info(`decoded.role: ${decoded.role}`);
-
-    return res.status(201).render("rebind_page", { layout: "layout", priority: priority_from_role(decoded.role), path: "/api/auth/rebind_page", token: token });
 };
 
 export const rebind_qr = async (req, res) => {
@@ -882,126 +918,135 @@ export const scan_result = async (req, res) => {
 };
 
 export const recycle_bin = async (req, res) => {
-    
-    const token = req.cookies.token;  // 從 cookie 拿 token
-    if (!token) {
-        return res.redirect("/api/auth/loginPage"); // 沒有 token 回登入頁
+    try {
+        const token = req.cookies.token;  // 從 cookie 拿 token
+        if (!token) {
+            return res.redirect("/api/auth/loginPage"); // 沒有 token 回登入頁
+        }
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        logger.info(`decoded: ${JSON.stringify(decoded)}`);
+        logger.info(`decoded.name: ${decoded.name}`);
+
+        const record = await findDiscardRecord("name", decoded.name);
+        let length = 0;
+
+        logger.info(`record: ${JSON.stringify(record)}`);
+
+        let grouped = {};
+
+        if (record) {
+            // 1. 排序 (依 created_at 從新到舊)
+            record.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+            // 假設 record 是陣列
+            length = Object.keys(record).length;
+
+            // 2. 分組 (key = YYYY-MM-DD)
+            grouped = record.reduce((acc, item) => {
+              logger.info(`item.created_at: ${item.created_at}`);
+              const dateKey = item.created_at.toISOString().split("T")[0] // Date → YYYY-MM-DD
+              logger.info(`dateKey: ${dateKey}`);
+
+              if (!acc[dateKey]) {
+                acc[dateKey] = [];
+              }
+              acc[dateKey].push(item);
+              return acc;
+            }, {});
+            logger.info(`grouped: ${JSON.stringify(grouped)}`);
+        }
+
+        return res.status(201).render("recycle_bin", 
+        { layout: "layout", 
+          grouped_records: grouped, 
+          priority: priority_from_role(decoded.role), 
+          path: "/api/auth/recycle_bin", 
+          id: decoded.id, 
+          patient_id: `${decoded.id}-${length}`,
+          name: decoded.name,
+          token: token, 
+          formatDateTime });
+    } catch (err) {
+        logger.info("recycle bin error: ", err.message);
+        return res.redirect("/api/auth/loginPage");
     }
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    logger.info(`decoded: ${JSON.stringify(decoded)}`);
-    logger.info(`decoded.name: ${decoded.name}`);
-
-    const record = await findDiscardRecord("name", decoded.name);
-    let length = 0;
-
-    logger.info(`record: ${JSON.stringify(record)}`);
-
-    let grouped = {};
-
-    if (record) {
-        // 1. 排序 (依 created_at 從新到舊)
-        record.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-
-        // 假設 record 是陣列
-        length = Object.keys(record).length;
-
-        // 2. 分組 (key = YYYY-MM-DD)
-        grouped = record.reduce((acc, item) => {
-          logger.info(`item.created_at: ${item.created_at}`);
-          const dateKey = item.created_at.toISOString().split("T")[0] // Date → YYYY-MM-DD
-          logger.info(`dateKey: ${dateKey}`);
-
-          if (!acc[dateKey]) {
-            acc[dateKey] = [];
-          }
-          acc[dateKey].push(item);
-          return acc;
-        }, {});
-        logger.info(`grouped: ${JSON.stringify(grouped)}`);
-    }
-
-    return res.status(201).render("recycle_bin", 
-    { layout: "layout", 
-      grouped_records: grouped, 
-      priority: priority_from_role(decoded.role), 
-      path: "/api/auth/recycle_bin", 
-      id: decoded.id, 
-      patient_id: `${decoded.id}-${length}`,
-      name: decoded.name,
-      token: token, 
-      formatDateTime });
 };
 
 export const recycle_record = [
-  upload_gb.any(), 
-  async (req, res) => {
-    const body = req.body;
+    upload_gb.any(), 
+    async (req, res) => {
+      try {
+          const body = req.body;
 
-    generateToken(body);
+          generateToken(body);
 
-    const files = req.files;
+          const files = req.files;
 
-    const token = body.token;
-    if (!token) {
-      return res.redirect("/api/auth/loginPage");
-    }
-
-    const action = body.action;
-    const patientId = body.patient_id;
-
-    if (action == "resume") {
-
-        const uploadDir_gb = path.join(process.cwd(), "public", "uploads_gb", patientId);
-        const uploadDir = path.join(process.cwd(), "public", "uploads", patientId);
-
-        if (!fs.existsSync(uploadDir)) {
-          fs.mkdirSync(uploadDir, { recursive: true });
-        }
-
-        if (fs.existsSync(uploadDir_gb)) {
-          // move the files from folder with gb to that with original ones
-          const moveOk = await movefiles(uploadDir_gb, uploadDir);
-          if (moveOk == false) {
-            return res.status(401).json({ success: false, message: "Files transfer failed" })
+          const token = body.token;
+          if (!token) {
+            return res.redirect("/api/auth/loginPage");
           }
-        }
 
-        for (const file of files) {
-          const targetPath = path.join(uploadDir, file.originalname);
-          fs.renameSync(file.path, targetPath);
-        }
+          const action = body.action;
+          const patientId = body.patient_id;
 
-        // 儲存檔案到 patient_id 資料夾
-        for (let i = 1; i <= 8; i++) {
-          const fieldName = `pic${i}_2`;
-          const file = files.find(f => f.fieldname === fieldName);
-          logger.info(`body[pic${i}_2]=`, body[`pic${i}_2`]);
+          if (action == "resume") {
 
-          if (file) {
-            // 有新檔 → 搬移到 patient_id 資料夾
-            const newPath = path.join(uploadDir, file.originalname);
-            await fs.promises.rename(file.path, newPath);
+              const uploadDir_gb = path.join(process.cwd(), "public", "uploads_gb", patientId);
+              const uploadDir = path.join(process.cwd(), "public", "uploads", patientId);
+
+              if (!fs.existsSync(uploadDir)) {
+                fs.mkdirSync(uploadDir, { recursive: true });
+              }
+
+              if (fs.existsSync(uploadDir_gb)) {
+                // move the files from folder with gb to that with original ones
+                const moveOk = await movefiles(uploadDir_gb, uploadDir);
+                if (moveOk == false) {
+                  return res.status(401).json({ success: false, message: "Files transfer failed" })
+                }
+              }
+
+              for (const file of files) {
+                const targetPath = path.join(uploadDir, file.originalname);
+                fs.renameSync(file.path, targetPath);
+              }
+
+              // 儲存檔案到 patient_id 資料夾
+              for (let i = 1; i <= 8; i++) {
+                const fieldName = `pic${i}_2`;
+                const file = files.find(f => f.fieldname === fieldName);
+                logger.info(`body[pic${i}_2]=`, body[`pic${i}_2`]);
+
+                if (file) {
+                  // 有新檔 → 搬移到 patient_id 資料夾
+                  const newPath = path.join(uploadDir, file.originalname);
+                  await fs.promises.rename(file.path, newPath);
+                }
+              }
+              
+              // recover the info in database records_gb accordingly
+              const record = await recoverRecord(body);
+
+              return res.status(201).json({ "success": true, "message": "Recover files successfully", redirect: "/api/auth/recycle_bin" });
+
+          } else if (action === "delete") {
+              const uploadDir_gb = path.join(process.cwd(), "public", "uploads_gb", patientId);
+              if (fs.existsSync(uploadDir_gb)) {
+                  // remove the files from folder with gb
+                  await deletefiles(uploadDir_gb);
+              }
+              
+              // remove the info in database records_gb accordingly
+              const record = await deleteDiscardRecord(body);
+
+              return res.status(201).json({ "success": true, "message": "Delete files successfully", redirect: "/api/auth/recycle_bin" });
           }
-        }
-        
-        // recover the info in database records_gb accordingly
-        const record = await recoverRecord(body);
-
-        return res.status(201).json({ "success": true, "message": "Recover files successfully", redirect: "/api/auth/recycle_bin" });
-
-    } else if (action === "delete") {
-        const uploadDir_gb = path.join(process.cwd(), "public", "uploads_gb", patientId);
-        if (fs.existsSync(uploadDir_gb)) {
-            // remove the files from folder with gb
-            await deletefiles(uploadDir_gb);
-        }
-        
-        // remove the info in database records_gb accordingly
-        const record = await deleteDiscardRecord(body);
-
-        return res.status(201).json({ "success": true, "message": "Delete files successfully", redirect: "/api/auth/recycle_bin" });
-    }
+      } catch (err) {
+          logger.info("recycle bin error: ", err.message);
+          return res.redirect("/api/auth/loginPage");
+      }
   }
 ];
 
@@ -1068,7 +1113,7 @@ export const quickchangepwd = (req, res) => {
             name: decoded.name,
             email: decoded.email });
   } catch (err) {
-    console.error("JWT 驗證失敗:", err);
+    console.error("quickchangepwd error:", err.message);
     return res.redirect("/api/auth/loginPage");
   }
 };

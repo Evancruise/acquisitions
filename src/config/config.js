@@ -25,6 +25,7 @@ export const default_config = {
     mfaMethods: (process.env.MFA_METHODS || "totp").split(","), // totp, sms, email
     enableActivityMonitoring: process.env.ENABLE_ACTIVITY_MONITORING === "on", // true or false
     anomalyThreshold: parseFloat(process.env.ANOMALY_THRESHOLD || "0.8"), // 0 to 1
+    timezone: process.env.TIMEZONE || "UTC",
 }
 
 export const config = {
@@ -43,4 +44,5 @@ export const config = {
     mfaMethods: (process.env.MFA_METHODS || "totp").split(","), // totp, sms, email
     enableActivityMonitoring: process.env.ENABLE_ACTIVITY_MONITORING === "on", // true or false
     anomalyThreshold: parseFloat(process.env.ANOMALY_THRESHOLD || "0.8"), // 0 to 1
+    timezone: process.env.TIMEZONE || "UTC",
 };

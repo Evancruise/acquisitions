@@ -234,7 +234,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 if (input && img) {
                     input.value = picVal || "";
-                    img.src = picVal.split('/')[3] !== "undefined" ? picVal : `/static/images/${i}.png`; // 如果沒有就顯示預設圖
+                    img.src = picVal.split('/')[3] !== "undefined" || picVal.length !== 0 ? picVal : `/static/images/${i}.png`; // 如果沒有就顯示預設圖
                 }
             }
         });
