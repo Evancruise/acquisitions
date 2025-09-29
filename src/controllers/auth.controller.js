@@ -29,6 +29,8 @@ import { DateTime } from "luxon";
 
 const upload = multer({ dest: "uploads/" });
 const upload_gb = multer({ dest: "uploads_gb/" });
+const config_dir = path.join(process.cwd(), "config");
+let configPath = path.join(process.cwd(), "config", "settings.json");
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
@@ -786,6 +788,13 @@ export const account_management = async (req, res) => {
       }
 
       logger.info(`config: ${JSON.stringify(config)}`);
+      let fileContent = null;
+      let cur_config = null;
+      
+      if (fs.existsSync(configPath)) {
+          fileContent = fs.readFileSync(configPath, "utf-8");
+          cur_config = JSON.parse(fileContent);
+      }
 
       return res.status(201).render("account_management", 
       { layout: "layout",  
@@ -794,7 +803,7 @@ export const account_management = async (req, res) => {
         priority: priority_from_role(decoded.role), 
         path: "/api/auth/account_management", 
         token: token,
-        config: config});
+        config: cur_config});
     } catch(err) {
       console.log("account_management error: ", err.message);
       return res.redirect("/api/auth/loginPage");
@@ -848,31 +857,27 @@ export const edit_account = async (req, res) => {
 export const apply_account_setting = async (req, res) => {
     try {  
         const body = req.body;
+        const action = body.action;
 
+        logger.info("body:", body);
         generateToken(body);
 
-        const action = body.action;
-        logger.info("body:", body);
-
         if (action == "save") {
-            config.minPasswordLength = body.minPasswordLength;
-            config.passwordComplexity = body.passwordComplexity;
-            config.passwordExpiryDays = body.passwordExpiryDays;
-            config.accountLockThreshold = body.accountLockThreshold;
-            config.enableMFA = body.enableMFA;
-            config.mfaMethods = body.mfaMethods;
-            config.enableActivityMonitoring = body.enableActivityMonitoring;
-            config.anomalyThreshold = body.anomalyThreshold;
+          
+            let oldConfig = {};
+
+            if (!fs.existsSync(config_dir)) {
+                fs.mkdirSync(config_dir, { recursive: true });
+            } else if (fs.existsSync(configPath)) {
+                const raw = fs.readFileSync(configPath, "utf-8");
+                oldConfig = JSON.parse(raw);
+            }
+
+            const newConfig = { ...oldConfig, ...body, updated_at: new Date().toISOString() };
+
             return res.status(201).json({ success: true, message: "Update system setting successfully", redirect: "/api/auth/account_management" });
         } else if (action === "reset") {
-            config.minPasswordLength = default_config.minPasswordLength;
-            config.passwordComplexity = default_config.passwordComplexity;
-            config.passwordExpiryDays = default_config.passwordExpiryDays;
-            config.accountLockThreshold = default_config.accountLockThreshold;
-            config.enableMFA = default_config.enableMFA;
-            config.mfaMethods = default_config.mfaMethods;
-            config.enableActivityMonitoring = default_config.enableActivityMonitoring;
-            config.anomalyThreshold = default_config.anomalyThreshold;
+            fs.writeFileSync(configPath, JSON.stringify(default_config, null, 2));
             return res.status(201).json({ success: true, message: "Reset system setting successfully", redirect: "/api/auth/account_management" });
         } else if (action === "init") {
             removeUserTable();    
@@ -890,27 +895,55 @@ export const apply_account_setting = async (req, res) => {
 export const apply_system_setting = async (req, res) => {
     try {  
         const body = req.body;
-
-        generateToken(body);
-
-        logger.info("body:", body);
-
         const action = body.action;
+        
+        const updateInform = req.body.update_inform === "on";
 
         if (action === "save") {
-            config.expireTime = body.expireTime;
-            config.model_version = body.model_version;
-            config.threshold = body.threshold;
-            config.model_accuracy = body.model_accuracy;
-            config.update_inform = body.update_inform;
+            fs.writeFileSync(configPath, JSON.stringify(body, null, 2));
             return res.status(201).json({ success: true, message: "Apply system setting successfully", redirect: "/api/auth/account_management" });
         } else if (action === "reset") {
-            config.expireTime = default_config.expireTime;
-            config.model_version = default_config.model_version;
-            config.threshold = default_config.threshold;
-            config.model_accuracy = default_config.model_accuracy;
-            config.update_inform = default_config.update_inform;
+            fs.writeFileSync(configPath, JSON.stringify(default_config, null, 2));
             return res.status(201).json({ success: true, message: "Reset system setting successfully", redirect: "/api/auth/account_management" });
+        } else if (action === "backup") {
+
+            let oldConfig = {};
+
+            if (!fs.existsSync(config_dir)) {
+                fs.mkdirSync(config_dir, { recursive: true });
+            } else if (fs.existsSync(configPath)) {
+                const raw = fs.readFileSync(configPath, "utf-8");
+                oldConfig = JSON.parse(raw);
+            }
+
+            const newConfig = { ...oldConfig, ...body, updated_at: new Date().toISOString() };
+
+            logger.info(`newConfig: ${JSON.stringify(newConfig)}`);
+
+            fs.writeFileSync(configPath, JSON.stringify(newConfig, null, 2), "utf-8");
+
+            const jsonStr = JSON.stringify(newConfig, null, 2);
+
+            // 設定 response header 讓瀏覽器觸發下載
+            res.setHeader("Content-Disposition", "attachment; filename=settings.json");
+            res.setHeader("Content-Type", "application/json");
+            res.send(jsonStr);
+
+        } else if (action === "recover") {
+
+            const fileContent = fs.readFileSync(configPath, "utf-8");
+          
+            if (!fs.existsSync(configPath)) {
+                return res.json({ success: false, message: "No config file found" });
+            }
+
+            const settings = JSON.parse(fileContent);
+
+            console.log("匯入設定:", settings);
+
+            fs.writeFileSync(configPath, JSON.stringify(settings, null, 2));
+
+            return res.status(201).json({ success: true, redirect: "/api/auth/account_management" });
         }
 
     } catch (e) {

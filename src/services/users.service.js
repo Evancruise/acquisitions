@@ -193,9 +193,9 @@ export const getAllUsers = async () => {
             role,
             unit,
             password,
-            created_at AT TIME ZONE timezone AS created_local,
-            updated_at AT TIME ZONE timezone AS updated_local,
-            allowed_loggin_at AT TIME ZONE timezone AS allowed_local,
+            created_at,
+            updated_at,
+            allowed_loggin_at 
           FROM users
         `;
         return result;

@@ -225,20 +225,36 @@ document.addEventListener("DOMContentLoaded", () => {
                 body: formData,
             });
 
-            const data = await res.json();
+            
+            if (e.submitter.value == "backup") {
+                const blob = await res.blob();
+                
+                const url = window.URL.createObjectURL(blob);
 
-            if (data.success) {
-                showModal(data.message, () => {
-                    setTimeout(() => {
-                        window.location.href = data.redirect; // 怎麼引入 data.name?
-                    }, 1500);
-                }, () => {
-                    setTimeout(() => {
-                        window.location.href = data.redirect; // 怎麼引入 data.name?
-                    }, 1500);
-                });
-            } else {
-                showModal(`操作失敗: ${data.message}`);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "settings.json";
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+
+                window.URL.revokeObjectURL(url);
+
+            } else if (e.submitter.value == "save" || e.submitter.value == "reset") {
+                const data = await res.json();
+                if (data.success) {
+                    showModal(data.message, () => {
+                        setTimeout(() => {
+                            window.location.href = data.redirect; // 怎麼引入 data.name?
+                        }, 1500);
+                    }, () => {
+                        setTimeout(() => {
+                            window.location.href = data.redirect; // 怎麼引入 data.name?
+                        }, 1500);
+                    });
+                } else {
+                    showModal(`操作失敗: ${data.message}`);
+                }
             }
         });
     }

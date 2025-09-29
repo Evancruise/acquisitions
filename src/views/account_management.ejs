@@ -156,106 +156,109 @@
 </div>
 
 <div class="modal fade" id="systemSettingModal" tabindex="-1" aria-labelledby="systemSettingModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog">
         <div class="modal-content">
-          <form method="POST" enctype="multipart/form-data" action="/api/auth/apply_system_setting" class="card p-4" id="system_setting_form">
-            <div class="modal-body">
-              <!-- 系統設定 Toggle -->
-              <div class="section-toggle styled-toggle" data-bs-toggle="collapse" data-bs-target="#systemSettingCollapse"
-                role="button" aria-expanded="true" aria-controls="systemSettingCollapse">
-                <h5 class="toggle-title">
-                  <i class="fas fa-chevron-down me-2 rotate-icon" data-target="#systemSettingCollapse"></i> 系統設定
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-              </div>
+            <form method="POST" enctype="multipart/form-data" action="/api/auth/apply_system_setting" class="card p-4" id="system_setting_form">
+            
+                <!-- 系統設定 Toggle -->
+                <div class="modal-header custom-modal-header">
+                    <h5 class="modal-title animated-title" id="systemSettingModalLabel">
+                      <i class="fas fa-chevron-down me-2 rotate-icon" data-target="#systemSettingCollapse"></i> 系統設定
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
 
-              <!-- 系統設定內容 -->
-              <div id="systemSettingCollapse" class="collapse show">
+                <!-- 系統設定內容 -->
                 <div class="modal-body">
 
-                  <!-- 工作站設定 -->
-                  <div class="config-section">
-                    <h5 class="toggle-title">
-                      <i class="fas fa-chevron-down me-2 rotate-icon"></i>
-                      工作站設定
-                    </h5>
-                    <div class="config-subitems">
-                      <div class="mb-3">
-                        <label class="form-label">超時秒數</label>
-                        <input
-                          type="text"
-                          id="expireTime"
-                          name="expireTime"
-                          class="form-control w-auto"
-                          style="width: 25%; display: inline-block;"
-                        />
-                        <span class="ms-2">秒</span>
+                    <!-- 工作站設定 -->
+                    <div class="config-section">
+                      <h5 class="toggle-title">
+                        <i class="fas fa-chevron-down me-2 rotate-icon"></i>
+                        工作站設定
+                      </h5>
+                      <div class="config-subitems">
+                        <div class="mb-3">
+                          <label class="form-label">超時秒數</label>
+                          <input
+                            type="text"
+                            id="expireTime"
+                            name="expireTime"
+                            class="form-control w-auto"
+                            style="width: 25%; display: inline-block;"
+                          />
+                          <span class="ms-2">秒</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <!-- AI模型配置 -->
-                  <div class="config-section">
-                    <h5 class="toggle-title">
-                      <i class="fas fa-chevron-down me-2 rotate-icon"></i>
-                      AI模型配置
-                    </h5>
-                    <div class="config-subitems">
-                      <div class="mb-3">
-                        <label class="form-label">模型版本</label>
-                        <input type="text" id="model_version" name="model_version" class="form-control" />
-                      </div>
-                      <div class="mb-3">
-                        <label class="form-label">檢測閾值</label>
-                        <input type="text" id="threshold" name="threshold" class="form-control" />
-                      </div>
-                      <div class="mb-3">
-                        <label class="form-label">模型準確度</label>
-                        <input type="text" id="model_accuracy" name="model_accuracy" class="form-control" />
-                      </div>
-                      <div class="mb-3">
-                        <label class="form-label">模型更新通知</label>
-                        <input type="checkbox" id="update_inform" name="update_inform" class="form-check-input" />
+                    <!-- AI模型配置 -->
+                    <div class="config-section">
+                      <h5 class="toggle-title">
+                        <i class="fas fa-chevron-down me-2 rotate-icon"></i>
+                        AI模型配置
+                      </h5>
+                      <div class="config-subitems">
+                        <div class="mb-3">
+                          <label class="form-label">模型版本</label>
+                          <input type="text" id="model_version" name="model_version" class="form-control" />
+                        </div>
+                        <div class="mb-3">
+                          <label class="form-label">檢測閾值</label>
+                          <input type="text" id="threshold" name="threshold" class="form-control" />
+                        </div>
+                        <div class="mb-3">
+                          <label class="form-label">模型準確度</label>
+                          <input type="text" id="model_accuracy" name="model_accuracy" class="form-control" />
+                        </div>
+                        <div class="mb-3">
+                          <label class="form-label">模型更新通知</label>
+                          <input type="checkbox" id="update_inform" name="update_inform" class="form-check-input" />
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <!-- 追蹤與提醒設定 -->
-                  <div class="config-section">
-                    <h5 class="toggle-title">
-                      <i class="fas fa-chevron-down me-2 rotate-icon"></i>
-                      追蹤與提醒設定
-                    </h5>
-                  </div>
+                    <!-- 追蹤與提醒設定 -->
+                    <div class="config-section">
+                      <h5 class="toggle-title">
+                        <i class="fas fa-chevron-down me-2 rotate-icon"></i>
+                        追蹤與提醒設定
+                      </h5>
+                    </div>
 
-                  <!-- 遠程醫療設定 -->
-                  <div class="config-section">
-                    <h5 class="toggle-title">
-                      <i class="fas fa-chevron-down me-2 rotate-icon"></i>
-                      遠程醫療設定
-                    </h5>
-                  </div>
+                    <!-- 遠程醫療設定 -->
+                    <div class="config-section">
+                      <h5 class="toggle-title">
+                        <i class="fas fa-chevron-down me-2 rotate-icon"></i>
+                        遠程醫療設定
+                      </h5>
+                    </div>
 
-                  <!-- 醫學資料庫管理 -->
-                  <div class="config-section">
-                    <h5 class="toggle-title">
-                      <i class="fas fa-chevron-down me-2 rotate-icon"></i>
-                      醫學資料庫管理
-                    </h5>
-                  </div>
+                    <!-- 醫學資料庫管理 -->
+                    <div class="config-section">
+                      <h5 class="toggle-title">
+                        <i class="fas fa-chevron-down me-2 rotate-icon"></i>
+                        醫學資料庫管理
+                      </h5>
+                    </div>
                 </div>
-              </div>
-            </div>
 
-            <!-- Footer -->
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-              <button type="submit" name="action" value="reset" class="btn btn-primary">重設</button>
-              <button type="submit" name="action" value="save" class="btn btn-primary">儲存設定</button>
-              <button type="button" name="action" value="backup" class="btn btn-primary">備份 / 下載設定</button>
-              <button type="submit" name="action" value="recover" class="btn btn-primary">還原 / 上載設定</button>
-            </div>
-          </form>
+                <!-- Footer -->
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                  <button type="submit" name="action" value="reset" class="btn btn-primary">重設</button>
+                  <button type="submit" name="action" value="save" class="btn btn-primary">儲存設定</button>
+                  <button type="submit" name="action" value="backup" class="btn btn-primary">匯出設定</button>
+                  
+                  <div class="recover-container">
+                    <input type="file" id="configFile" accept=".json">
+                    <button type="submit" name="action" value="backup" id="recover-btn">匯入設定檔</button>
+                    <p id="recover-status"></p>
+                  </div>
+
+                  <button type="submit" name="action" value="recover" class="btn btn-primary">匯入設定</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

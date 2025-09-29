@@ -28,7 +28,7 @@ export const default_config = {
     timezone: process.env.TIMEZONE || "UTC",
 }
 
-export const config = {
+export let config = {
     MAX_PWD_ATTEMPTS: parseInt(process.env.MAX_PWD_ATTEMPTS || "5"),
     PWD_EXPIRE_DAYS: parseInt(process.env.PWD_EXPIRE_DAYS || "90"),
     expireTime: parseInt(process.env.EXPIRE_TIME || "3600"),
