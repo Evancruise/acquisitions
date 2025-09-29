@@ -14,7 +14,7 @@ body {
   border-radius: 12px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
   width: 100%;
-  max-width: 400px;
+  max-width: 480px;
   box-sizing: border-box;
 }
 
@@ -70,8 +70,8 @@ button:hover {
   text-align: center;
 }
 
-@media (max-width: 480px) {
+@media (max-width: 500px) {
   .register-container {
-    padding: 30px 20px;
+    padding: 20px 20px;
   }
 }

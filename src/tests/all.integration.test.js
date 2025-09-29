@@ -39,7 +39,7 @@ describe("🔐 Auth Integration Tests", () => {
     expect(res.body.user.email).toBe("user@test.com");
     expect(res.headers["set-cookie"]).toBeDefined();
 
-    cookie = res.headers["set-cookie"]; // 取 JWT
+    cookie = res.headers["set-cookie"]; // Fetch JWT
   });
 
   test("POST /api/auth/sign-in should login user", async () => {
@@ -51,7 +51,7 @@ describe("🔐 Auth Integration Tests", () => {
     expect(res.body.user.email).toBe("user@test.com");
     expect(res.headers["set-cookie"]).toBeDefined();
 
-    cookie = res.headers["set-cookie"]; // 更新 cookie
+    cookie = res.headers["set-cookie"]; // Update cookie
   });
 
   test("POST /api/auth/sign-out should logout user", async () => {

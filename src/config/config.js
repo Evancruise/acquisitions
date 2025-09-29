@@ -12,7 +12,7 @@ function parseChar(str, index = 0) {
 export const default_config = {
     MAX_PWD_ATTEMPTS: parseInt(process.env.MAX_PWD_ATTEMPTS || "5"),
     PWD_EXPIRE_DAYS: parseInt(process.env.PWD_EXPIRE_DAYS || "90"),
-    expireTime: parseInt(process.env.EXPIRE_TIME || "600"),
+    expireTime: parseInt(process.env.EXPIRE_TIME || "3600"),
     model_version: process.env.MODEL_VERSION || "v1.0",
     threshold: parseFloat(process.env.THRESHOLD || "0.5"),
     model_accuracy: parseFloat(process.env.MODEL_ACCURACY || "0.95"),
@@ -31,7 +31,7 @@ export const default_config = {
 export const config = {
     MAX_PWD_ATTEMPTS: parseInt(process.env.MAX_PWD_ATTEMPTS || "5"),
     PWD_EXPIRE_DAYS: parseInt(process.env.PWD_EXPIRE_DAYS || "90"),
-    expireTime: parseInt(process.env.EXPIRE_TIME || "600"),
+    expireTime: parseInt(process.env.EXPIRE_TIME || "3600"),
     model_version: process.env.MODEL_VERSION || "v1.0",
     threshold: parseFloat(process.env.THRESHOLD || "0.5"),
     model_accuracy: parseFloat(process.env.MODEL_ACCURACY || "0.95"),

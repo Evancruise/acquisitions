@@ -62,6 +62,44 @@ function generateSecureSixDigitCode() {
   return (array[0] % 1000000).toString().padStart(6, "0");
 }
 
+const send_email = async (email) => {
+  try {
+    // 寄信
+    const code = generateSecureSixDigitCode();
+    const code_hash = await bcrypt.hash(code, 10);
+
+    logger.info(`process.env.SENDGRID_API_KEY=${process.env.SENDGRID_API_KEY}`);
+    
+    await sgMail.send({
+      from: process.env.MAIL_FROM,
+      to: email,
+      subject: "Verify email from Oral cancer template",
+      html: `<p>Your Oral cancer app verification code is ${code}</p>`,
+    });
+
+    logger.info(`code: ${code}`);
+    logger.info(`[send_email] code_hash: ${JSON.stringify(code_hash)}`);
+
+    return code_hash;
+  } catch (err) {
+    logger.info(`Cannot send email: ${err.message}`);
+    return null;
+  }
+};
+
+export const resend = async (req, res) => {
+  try {
+    const { name, email, token } = req.body;
+    const code_hash = await send_email(email);
+
+    logger.info(`[resend] code_hash: ${code_hash}`);
+
+    return res.status(201).json({ success: true, layout: false, message: "Verification email sent", redirect: `/api/auth/verify?name=${name}&email=${email}&code_hash=${code_hash}&token=${token}` });
+  } catch (err) {
+    return res.status(401).json({ success: false, message: err.message });
+  }    
+};
+
 // ✅ 註冊
 export const request = async (req, res) => {
 
@@ -78,6 +116,9 @@ export const request = async (req, res) => {
     const register = await createRegister({ name, email });
     logger.info(`register: ${JSON.stringify(register)}`);
 
+    const code_hash = await send_email(email);
+
+    /*
     // 寄信
     const code = generateSecureSixDigitCode();
     const code_hash = await bcrypt.hash(code, 10);
@@ -92,6 +133,7 @@ export const request = async (req, res) => {
     });
 
     logger.info(`code: ${code}`);
+    */
 
     return res.status(201).json({ success: true, layout: false, message: "Verification email sent", redirect: `/api/auth/verify?name=${name}&email=${email}&code_hash=${code_hash}&token=${token}` });
   } catch (err) {
@@ -120,6 +162,9 @@ export const verify_register = async (req, res) => {
         const register = await findRegister({ email });
 
         logger.info(`register: ${JSON.stringify(register)}`);
+
+        logger.info(`req.body.code: ${req.body.code}`);
+        logger.info(`req.body.code_hash: ${req.body.code_hash}`);
 
         const id = register.id;
         let updated = null;

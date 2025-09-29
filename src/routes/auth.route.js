@@ -31,7 +31,8 @@ import { register,
         apply_system_setting,
         rebind_page,
         rebind_qr,
-        scan_result} from '#controllers/auth.controller.js';
+        scan_result,
+        resend} from '#controllers/auth.controller.js';
 // import { authenticateToken, authorizeRoles } from '#middleware/users.middleware.js';
 // import { sign } from 'jsonwebtoken';
 import multer from "multer";
@@ -81,6 +82,7 @@ router.post("/init-reg", initRegisterTable);
 router.post("/del-reg", deleteRegisterTable);
 
 router.post("/request", request);
+router.post("/resend", resend);
 
 router.get("/verify", verify);
 router.post("/verify_register", verify_register);

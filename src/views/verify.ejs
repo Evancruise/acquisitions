@@ -20,9 +20,15 @@
             <input type="text" id="code" name="code" placeholder="6-digit code" required>
             <input type="hidden" id="code_hash" name="code_hash" value="<%= code_hash %>">
 
-            <button type="submit">驗證</button>
+            <button type="submit" class="verify-btn">驗證</button>
         </form>
-
+        <br>
+        <form method="POST" action="/api/auth/resend" id="resend_form">
+            <input type="hidden" id="name" name="name" value="<%= name %>">
+            <input type="hidden" id="email" name="email" value="<%= email %>">
+            <input type="hidden" id="token" name="token" value="<%= token %>">
+            <button type="submit" class="resend-btn">重新發送驗證碼</button>
+        </form>
         <a class="login-link" href="/api/auth/loginPage">返回登入頁</a>
     </div>
 
