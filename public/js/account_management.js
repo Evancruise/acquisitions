@@ -3,6 +3,7 @@ import { renderUserTable } from "./table.js";
 import { renderUserPagination } from "./pagination.js";
 
 loadModal("modal-container");
+loadModal("modal-container-2");
 
 const account_form = document.getElementById("account_form");
 const add_account_form = document.getElementById("add_account_form");
@@ -12,6 +13,10 @@ const system_setting_form = document.getElementById("system_setting_form");
 const system_setting_modal = document.getElementById("systemSettingModal");
 const table_wraps = document.querySelectorAll(".table-wrap");
 const toggleBtn = document.getElementById("toggle-password");
+const btn_export = document.getElementById("btn-export");
+const btn_reset = document.getElementById("btn-reset");
+const btn_restore = document.getElementById("btn-restore");
+const fileInput = document.getElementById("configFile");
 
 document.addEventListener("DOMContentLoaded", () => {
     const configTag = document.getElementById("config-data");
@@ -226,21 +231,7 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
             
-            if (e.submitter.value == "backup") {
-                const blob = await res.blob();
-                
-                const url = window.URL.createObjectURL(blob);
-
-                const a = document.createElement("a");
-                a.href = url;
-                a.download = "settings.json";
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-
-                window.URL.revokeObjectURL(url);
-
-            } else if (e.submitter.value == "save" || e.submitter.value == "reset") {
+            if (e.submitter.value == "save") {
                 const data = await res.json();
                 if (data.success) {
                     showModal(data.message, () => {
@@ -255,6 +246,109 @@ document.addEventListener("DOMContentLoaded", () => {
                 } else {
                     showModal(`操作失敗: ${data.message}`);
                 }
+            }
+        });
+    }
+
+    if (btn_export) {
+        btn_export.addEventListener("click", async (e) => {
+            e.preventDefault();
+
+            const res = await fetch("/api/auth/sys_export", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+            });
+
+            const blob = await res.blob();
+            const url = window.URL.createObjectURL(blob);
+
+            // 建立一個隱藏 <a> 觸發下載
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "settings.json"; // 下載檔名
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+
+            window.URL.revokeObjectURL(url);
+        });
+    }
+
+    if (btn_reset) {
+        btn_reset.addEventListener("click", async (e) => {
+            e.preventDefault();
+
+            showModal("確定要系統重設?", () => {
+                return;
+            }, async () => {
+                const res = await fetch("/api/auth/reset", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                });
+
+                const data = await res.json();
+
+                if (!data.success) {
+                    showModal(`${data.message}`);
+                    return;
+                }
+
+                showModal(data.message, () => {
+                    setTimeout(() => {
+                        window.location.href = data.redirect; // 怎麼引入 data.name?
+                    }, 1500);
+                }, () => {
+                    setTimeout(() => {
+                        window.location.href = data.redirect; // 怎麼引入 data.name?
+                    }, 1500);
+                });
+            }, "modal-container-2", "取消", "確定");
+        });
+    }
+
+    if (btn_restore) {
+        btn_restore.addEventListener("click", (e) => {
+            e.preventDefault();
+            fileInput.click(); // ✅ 點擊 button → 觸發隱藏 input[type=file]
+        });
+
+        fileInput.addEventListener("change", async () => {
+            if (!fileInput.files.length) return;
+
+            const formData = new FormData();
+            formData.append("config", fileInput.files[0]);
+
+            try {
+                const res = await fetch("/api/auth/sys_import", {
+                    method: "POST",
+                    body: formData
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    showModal(data.message, () => {
+                        setTimeout(() => {
+                            window.location.href = data.redirect; // 怎麼引入 data.name?
+                                }, 1500);
+                    }, () => {
+                        setTimeout(() => {
+                            window.location.href = data.redirect; // 怎麼引入 data.name?
+                        }, 1500);
+                    });
+                } else {
+                    showModal(data.message, () => {
+                        setTimeout(() => {
+                            window.location.href = data.redirect; // 怎麼引入 data.name?
+                                }, 1500);
+                    }, () => {
+                        setTimeout(() => {
+                            window.location.href = data.redirect; // 怎麼引入 data.name?
+                        }, 1500);
+                    });
+                }
+            } catch (err) {
+                console.error(err);
+                alert("❌ 系統錯誤，請稍後再試");
             }
         });
     }

@@ -874,12 +874,14 @@ export const apply_account_setting = async (req, res) => {
             }
 
             const newConfig = { ...oldConfig, ...body, updated_at: new Date().toISOString() };
+            
+            fs.writeFileSync(configPath, JSON.stringify(newConfig, null, 2), "utf-8");
 
             return res.status(201).json({ success: true, message: "Update system setting successfully", redirect: "/api/auth/account_management" });
-        } else if (action === "reset") {
+        } /* else if (action === "reset") {
             fs.writeFileSync(configPath, JSON.stringify(default_config, null, 2));
             return res.status(201).json({ success: true, message: "Reset system setting successfully", redirect: "/api/auth/account_management" });
-        } else if (action === "init") {
+        } */ else if (action === "init") {
             removeUserTable();    
             createUsersTable();
             removeRegisterTable();
@@ -892,6 +894,60 @@ export const apply_account_setting = async (req, res) => {
     }
 };
 
+export const sys_import = async (req, res) => {
+    
+  try{
+
+    const fileContent = req.file.buffer.toString("utf-8");
+    const settings = JSON.parse(fileContent);
+
+    console.log("匯入設定:", settings);
+
+    fs.writeFileSync(configPath, JSON.stringify(settings, null, 2));
+
+    return res.status(201).json({ success: true, message: "匯入檔案成功", redirect: "/api/auth/account_management" });
+  } catch (err) {
+    return res.status(401).json({ success: false, message: `sys_import err: ${err.message}`, redirect: "/api/auth/account_management" });
+  }
+};
+
+export const reset = async (req, res) => {
+    fs.writeFileSync(configPath, JSON.stringify(default_config, null, 2));
+    return res.status(201).json({ success: true, message: "Reset system setting successfully", redirect: "/api/auth/account_management" });
+};
+
+export const sys_export = async (req, res) => {
+  try {  
+    
+    let oldConfig = {};
+
+    if (!fs.existsSync(config_dir)) {
+        fs.mkdirSync(config_dir, { recursive: true });
+
+        const newConfig = { ...oldConfig, ...config, updated_at: new Date().toISOString() };
+
+        logger.info(`newConfig: ${JSON.stringify(newConfig)}`);
+
+        fs.writeFileSync(configPath, JSON.stringify(newConfig, null, 2), "utf-8");
+
+    } else {
+        const old_raw = fs.readFileSync(configPath, "utf-8");
+        oldConfig = JSON.parse(old_raw);
+    }
+
+    const raw = fs.readFileSync(configPath, "utf-8");
+    const jsonStr = JSON.parse(raw);
+
+    // 設定 response header 讓瀏覽器觸發下載
+    res.setHeader("Content-Disposition", "attachment; filename=settings.json");
+    res.setHeader("Content-Type", "application/json");
+    res.send(jsonStr);
+  } catch (err) {
+    logger.info(`sys_export error: $(err.message)`);
+    return res.status(401).json({ "success": false, "message": err.message });
+  }
+};
+
 export const apply_system_setting = async (req, res) => {
     try {  
         const body = req.body;
@@ -900,9 +956,24 @@ export const apply_system_setting = async (req, res) => {
         const updateInform = req.body.update_inform === "on";
 
         if (action === "save") {
-            fs.writeFileSync(configPath, JSON.stringify(body, null, 2));
+
+            let oldConfig = {};
+
+            if (!fs.existsSync(config_dir)) {
+                fs.mkdirSync(config_dir, { recursive: true });
+            } else {
+                const raw = fs.readFileSync(configPath, "utf-8");
+                oldConfig = JSON.parse(raw);
+            }
+
+            const newConfig = { ...oldConfig, ...body, updated_at: new Date().toISOString() };
+
+            logger.info(`newConfig: ${JSON.stringify(newConfig)}`);
+
+            fs.writeFileSync(configPath, JSON.stringify(newConfig, null, 2), "utf-8");
+    
             return res.status(201).json({ success: true, message: "Apply system setting successfully", redirect: "/api/auth/account_management" });
-        } else if (action === "reset") {
+        } /* else if (action === "reset") {
             fs.writeFileSync(configPath, JSON.stringify(default_config, null, 2));
             return res.status(201).json({ success: true, message: "Reset system setting successfully", redirect: "/api/auth/account_management" });
         } else if (action === "backup") {
@@ -945,6 +1016,7 @@ export const apply_system_setting = async (req, res) => {
 
             return res.status(201).json({ success: true, redirect: "/api/auth/account_management" });
         }
+        */
 
     } catch (e) {
         logger.error("apply_system_setting error:", e);

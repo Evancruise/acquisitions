@@ -32,7 +32,10 @@ import { register,
         rebind_page,
         rebind_qr,
         scan_result,
-        resend} from '#controllers/auth.controller.js';
+        resend,
+        sys_export,
+        reset,
+        sys_import} from '#controllers/auth.controller.js';
 // import { authenticateToken, authorizeRoles } from '#middleware/users.middleware.js';
 // import { sign } from 'jsonwebtoken';
 import multer from "multer";
@@ -61,6 +64,9 @@ router.post("/edit_account", upload.none(), edit_account);
 router.post("/new_account", upload.none(), new_account);
 router.post("/apply_account_setting", upload.none(), apply_account_setting);
 router.post("/apply_system_setting", upload.none(), apply_system_setting);
+router.post("/sys_export", sys_export);
+router.post("/reset", reset);
+router.post("/sys_import", upload.single("config"), sys_import);
 
 router.get("/rebind_page", rebind_page);
 router.get("/rebind-qr", rebind_qr);

@@ -1,13 +1,14 @@
 <div class="card">
     <div class="bar">
         <div class="group">
-            <!-- <button class="btn btn-chip" id="btn-setting"><span class="i">⚙️</span>系統設定</button> -->
-            <button class="btn btn-chip" id="btn-setting" data-bs-toggle="modal" data-bs-target="#systemSettingModal"><span class="i">⚙️</span>系統設定</button>
-            <button class="btn btn-chip" id="btn-setting" data-bs-toggle="modal" data-bs-target="#accountSettingModal"><span class="i">🧩</span>帳號管理</button>
-            <!-- <button class="btn btn-green" id="btn-gen"><span class="i">🔐</span>產生密碼</button> -->
-            <!-- <button class="btn btn-red" id="btn-logout"><span class="i">🚪</span>登出</button> -->
-            <!--<button class="btn btn-blue" id="btn-add"><span class="i">🧑‍💼</span>新增使用者</button>-->
-            <button class="btn btn-blue" id="btn-add" data-bs-toggle="modal" data-bs-target="#NewAccountModal"><span class="i">🧑‍💼</span>新增使用者</button>
+            <!-- <button class="btn btn-chip" id="btn-setting"><span class="i"></span>系統設定</button> -->
+            <button class="btn btn-chip" id="btn-setting" data-bs-toggle="modal" data-bs-target="#systemSettingModal"><span class="i"></span>系統設定</button>
+            <button class="btn btn-chip" id="btn-setting" data-bs-toggle="modal" data-bs-target="#accountSettingModal"><span class="i"></span>帳號管理</button>
+            <button class="btn btn-green" id="btn-export" name="export"><span class="i"></span>匯出設定</button>
+            <button class="btn btn-red" id="btn-reset" name="reset"><span class="i"></span>系統重設</button>
+            <button class="btn btn-blue" id="btn-restore" name="restore"><span class="i"></span>匯入設定</button>
+            <input type="file" id="configFile" accept=".json" hidden>
+            <button class="btn btn-blue" id="btn-add" data-bs-toggle="modal" data-bs-target="#NewAccountModal"><span class="i"></span>新增使用者</button>
         </div>
     </div>
     <div class="table-wrap">
@@ -246,10 +247,11 @@
                 <!-- Footer -->
                 <div class="modal-footer">
                   <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                  <button type="submit" name="action" value="reset" class="btn btn-primary">重設</button>
+                  <!-- <button type="submit" name="action" value="reset" class="btn btn-primary">重設</button> -->
                   <button type="submit" name="action" value="save" class="btn btn-primary">儲存設定</button>
-                  <button type="submit" name="action" value="backup" class="btn btn-primary">匯出設定</button>
+                  <!-- <button type="submit" name="action" value="backup" class="btn btn-primary">匯出設定</button> -->
                   
+                  <!--
                   <div class="recover-container">
                     <input type="file" id="configFile" accept=".json">
                     <button type="submit" name="action" value="backup" id="recover-btn">匯入設定檔</button>
@@ -257,6 +259,7 @@
                   </div>
 
                   <button type="submit" name="action" value="recover" class="btn btn-primary">匯入設定</button>
+                  -->
                 </div>
             </form>
         </div>
@@ -385,7 +388,7 @@
             <!-- Footer -->
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                <button type="submit" name="action" value="reset" class="btn btn-secondary">重設</button>
+                <!-- <button type="submit" name="action" value="reset" class="btn btn-secondary">重設</button> -->
                 <button type="submit" name="action" value="init" class="btn btn-secondary">帳號初始化</button>
                 <button type="submit" name="action" value="save" class="btn btn-primary">儲存設定</button>
             </div>
