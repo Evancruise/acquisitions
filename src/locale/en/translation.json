@@ -1,0 +1,29 @@
+{
+    "dashboard": {
+        "title": "Home page",
+        "content_1": "Welcome"
+    },
+    "record": {
+        "title": "Record",
+        "already_upload": "Uploaded"
+    },
+    "record_search": {
+        "title": "Record (All)"
+    },
+    "account_management": {
+        "title": "Account (All)"
+    },
+    "recycle_bin": {
+        "title": "Recycle bin"
+    },
+    "quick_chgpwd": {
+        "title": "Change password"
+    },
+    "rebind_account": {
+        "title": "Rebind account"
+    },
+    "logout": "Logout",
+    "title": "Department of Medical Imaging",
+    "version": "ver",
+    "app_name": "Picture Archiving and Communication System"
+}

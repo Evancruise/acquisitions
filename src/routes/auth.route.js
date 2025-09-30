@@ -39,6 +39,20 @@ import { register,
 // import { authenticateToken, authorizeRoles } from '#middleware/users.middleware.js';
 // import { sign } from 'jsonwebtoken';
 import multer from "multer";
+import i18next from "i18next";
+import i18nextMiddleware from "i18next-http-middleware";
+import Backend from "i18next-fs-backend";
+
+i18next
+  .use(Backend)
+  .use(i18nextMiddleware.LanguageDetector)
+  .init({
+    fallbackLng: "en",
+    preload: ["en", "zh-TW"],
+    backend: {
+      loadPath: "./locale/{{lng}}/translation.json",
+    },
+  });
 
 const router = express.Router();
 const upload = multer();

@@ -14,6 +14,10 @@ import expressLayouts from "express-ejs-layouts";
 import session from "express-session";
 
 // import securityMiddleWare from '#middleware/security.middleware.js';
+import i18next from "i18next";
+import i18nextMiddleware from "i18next-http-middleware";
+import Backend from "i18next-fs-backend";
+
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -26,6 +30,24 @@ dotenv.config();
 
 const app = express();
 
+i18next
+    .use(Backend) 
+    .use(i18nextMiddleware.LanguageDetector)
+    .init({
+        fallbackLng: "en",
+        preload: ["en", "zh"],
+        backend: {
+            loadPath: "./src/locale/{{lng}}/translation.json"
+        },
+        detection: {
+            order: ["querystring", "cookie", "header"],
+            caches: ["cookie"]
+        }
+    });
+
+logger.info("i18next test:", i18next.t("dashboard.title"));
+
+app.use(i18nextMiddleware.handle(i18next));
 app.use(cors())
 app.use(helmet());
 app.use(express.json());

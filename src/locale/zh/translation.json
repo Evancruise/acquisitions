@@ -1,0 +1,29 @@
+{
+    "dashboard": {
+        "title": "首頁",
+        "content_1": "歡迎使用"
+    },
+    "record": {
+        "title": "個人病歷紀錄",
+        "already_upload": "已上傳"
+    },
+    "record_search": {
+        "title": "所有病歷紀錄"
+    },
+    "account_management": {
+        "title": "帳號管理"
+    },
+    "recycle_bin": {
+        "title": "垃圾桶"
+    },
+    "quick_chgpwd": {
+        "title": "快速密碼修改"
+    },
+    "rebind_account": {
+        "title": "重新綁定"
+    },
+    "logout": "登出",
+    "title": "台大影像醫學部",
+    "version": "ver",
+    "app_name": "病歷影像記錄系統"
+}

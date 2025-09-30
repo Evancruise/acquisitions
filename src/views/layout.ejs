@@ -17,52 +17,52 @@
     <!-- 側邊選單 -->
     <div class="sidebar">
         <div class="user-info">
-            <p>臺大醫院影像醫學部</p>
+            <p> <%= t("title") %> </p>
             <img src="/static/images/logo.png" alt="icon" class="user-icon">
         </div>
         <ul class="menu">
             <li>
                 <a class="nav-link <%= (path === '/api/auth/dashboard') ? 'active' : '' %>" href="/api/auth/dashboard">
-                    <i class="fas fa-home"></i> 首頁
+                    <i class="fas fa-home"></i> <%= t("dashboard.title") %>
                 </a>
             </li>
             <li>
                 <a class="nav-link <%= (path === '/api/auth/record') ? 'active' : '' %>" href="/api/auth/record">
-                    <i class="fa-regular fa-user"></i> 個人病歷紀錄
+                    <i class="fa-regular fa-user"></i> <%= t("record.title") %>
                 </a>
             </li>
             <li>
                 <a class="nav-link <%= (path === '/api/auth/record_search') ? 'active' : '' %>"
                     style="display: <%= (priority === 1) ? 'flex' : 'none' %>"
                     href="/api/auth/record_search">
-                    <i class="fa-duotone fa-thin fa-calendar"></i> 所有病歷紀錄
+                    <i class="fa-duotone fa-thin fa-calendar"></i> <%= t("record.title") %>
                 </a>
             </li>
             <li>
                 <a class="nav-link <%= (path === '/api/auth/account_management') ? 'active' : '' %>"
                     style="display: <%= (priority === 1) ? 'flex' : 'none' %>"
                     href="/api/auth/account_management">
-                    <i class="fas fa-history"></i> 帳號管理
+                    <i class="fas fa-history"></i> <%= t("account_management.title") %>
                 </a>
             </li>
             <li>
                 <a class="nav-link <%= (path === '/api/auth/recycle_bin') ? 'active' : '' %>" href="/api/auth/recycle_bin">
-                    <i class="fas fa-trash"></i> 垃圾桶
+                    <i class="fas fa-trash"></i> <%= t("recycle_bin.title") %>
                 </a>
             </li>
             <li>
                 <a class="nav-link <%= (path === '/api/auth/quick_changepwd') ? 'active' : '' %>" href="/api/auth/quick_changepwd">
-                    <i class="fas fa-key"></i> 快速密碼變更
+                    <i class="fas fa-key"></i> <%= t("quick_chgpwd.title") %>
                 </a>
             </li>
             <li>
                 <a class="nav-link <%= (path === '/api/auth/rebind_page') ? 'active' : '' %>" href="/api/auth/rebind_page">
-                    <i class="fas fa-link"></i> 重新綁定
+                    <i class="fas fa-link"></i> <%= t("rebind_account.title") %>
                 </a>
             </li>
             <li>
                 <a class="nav-link" href="/api/auth/sign-out">
-                    <i class="fas fa-sign-out-alt"></i> 登出
+                    <i class="fas fa-sign-out-alt"></i> <%= t("logout") %>
                 </a>
             </li>
         </ul>
@@ -71,15 +71,25 @@
 
     <!-- 主內容區 -->
     <main>
-        <div class="header">
-            <div class="logo"></div>
-            <div class="title">
-            <h1>醫快拍</h1>
-            <small>病歷影像記錄系統</small>
+        <!-- 幫我將語言切換鈕寫在頁首 -->
+        <div class="header" style="display:flex; justify-content:space-between; align-items:center; padding:0.5rem 1rem; border-bottom:1px solid #ccc;">
+            
+            <!-- 左側：Logo + 標題 -->
+            <div class="title" style="display:flex; flex-direction:column;">
+                <!-- <h1 style="margin:0;"></h1> -->
+                <small><%= t("app_name") %></small>
+            </div>
+
+            <!-- 右側：語言切換 -->
+            <div class="lang-switch">
+                <a href="?lng=zh" style="margin-right:1rem; text-decoration:none; color:#3aa3d1; font-weight:600;">中文</a>
+                <a href="?lng=en" style="text-decoration:none; color:#3aa3d1; font-weight:600;">English</a>
             </div>
         </div>
+
         <%- body %>
-        <div class="footer">
+
+        <div class="footer" style="text-align:center; margin-top:2rem; font-size:0.9rem;">
             <a href="#" style="text-decoration:none; font-weight:800; color:#3aa3d1">Mi-tech</a> Copyright © 2019
         </div>
     </main>

@@ -360,10 +360,12 @@ export const signin = async (req, res, next) => {
     });
 
     logger.info(`✅ User logged in: ${email}`);
+    logger.info(`req.t: ${req.t}`);
 
     return res.status(200).json({
       success: true,
       message: "Login successful",
+      t: req.t,
       user: {
         id: user.id,
         name: user.name,
@@ -412,8 +414,9 @@ export const dashboard = (req, res) => {
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     logger.info(`decoded.name: ${decoded.name}`);
+    logger.info(`req.t: ${req.t}`);
 
-    res.render("dashboard", { name: decoded.name, path: "/api/auth/dashboard", priority: priority_from_role(decoded.role), layout: "layout" });
+    res.render("dashboard", { name: decoded.name, t: req.t, path: "/api/auth/dashboard", priority: priority_from_role(decoded.role), layout: "layout" });
   } catch (err) {
     console.error("JWT 驗證失敗:", err);
     return res.redirect("/api/auth/loginPage");
