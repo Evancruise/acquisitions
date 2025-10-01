@@ -1,0 +1,76 @@
+/* 頁首基礎 */
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.8rem 1.5rem;
+  border-bottom: 1px solid #e0e0e0;
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+/* 左側標題 */
+.header-title small {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #3aa3d1;
+  margin: 0;
+}
+
+/* 中間導覽 */
+.header-nav {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.header-nav .nav-link {
+  text-decoration: none;
+  color: #555;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+
+.header-nav .nav-link:hover {
+  color: #3aa3d1;
+}
+
+/* 語言切換 */
+.lang-switch {
+  display: flex;
+  gap: 1rem;
+}
+
+.lang-link {
+  text-decoration: none;
+  color: #3aa3d1;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+
+.lang-link:hover {
+  color: #0077a3;
+}
+
+/* 主內容 */
+.app-body {
+  padding: 2rem;
+}
+
+/* 頁尾 */
+.app-footer {
+  text-align: center;
+  margin-top: 2rem;
+  font-size: 0.9rem;
+  padding: 1rem;
+  border-top: 1px solid #e0e0e0;
+  color: #555;
+}
+
+.app-footer a {
+  text-decoration: none;
+  font-weight: 800;
+  color: #3aa3d1;
+}

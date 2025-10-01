@@ -5,6 +5,8 @@
     <title> 醫快拍 </title>
     <link rel="stylesheet" href="/css/table.css">
     <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="/css/header.css">
     <link rel="stylesheet" href="/css/modal.css">
     <link rel="stylesheet" href="/css/record.css">
     <link rel="stylesheet" href="/css/record_search.css">
@@ -71,27 +73,40 @@
 
     <!-- 主內容區 -->
     <main>
-        <!-- 幫我將語言切換鈕寫在頁首 -->
-        <div class="header" style="display:flex; justify-content:space-between; align-items:center; padding:0.5rem 1rem; border-bottom:1px solid #ccc;">
-            
+        <!-- 頁首 -->
+        <header class="app-header">
             <!-- 左側：Logo + 標題 -->
-            <div class="title" style="display:flex; flex-direction:column;">
-                <!-- <h1 style="margin:0;"></h1> -->
-                <small><%= t("app_name") %></small>
+            <div class="header-title">
+            <!-- <h1><%= t("app_name") %></h1> -->
+            <small><%= t("app_name") %></small>
             </div>
+
+            <!-- 中間：系統設定/隱私 -->
+            <nav class="header-nav">
+            <a class="nav-link" href="/api/auth/sys_setting">
+                <i class="fa-regular fa-gear"></i> <%= t("setting") %>
+            </a>
+            <a class="nav-link" href="/api/auth/privacy">
+                <i class="fa-solid fa-user-lock"></i> <%= t("privacy") %>
+            </a>
+            </nav>
 
             <!-- 右側：語言切換 -->
             <div class="lang-switch">
-                <a href="?lng=zh" style="margin-right:1rem; text-decoration:none; color:#3aa3d1; font-weight:600;">中文</a>
-                <a href="?lng=en" style="text-decoration:none; color:#3aa3d1; font-weight:600;">English</a>
+            <a href="?lng=zh" class="lang-link">中文</a>
+            <a href="?lng=en" class="lang-link">English</a>
             </div>
-        </div>
+        </header>
 
-        <%- body %>
+        <!-- 主內容 -->
+        <section class="app-body">
+            <%- body %>
+        </section>
 
-        <div class="footer" style="text-align:center; margin-top:2rem; font-size:0.9rem;">
-            <a href="#" style="text-decoration:none; font-weight:800; color:#3aa3d1">Mi-tech</a> Copyright © 2019
-        </div>
+        <!-- 頁尾 -->
+        <footer class="app-footer">
+            <a href="#">Mi-tech</a> Copyright © 2019
+        </footer>
     </main>
 
     <div id="modal-container"></div>

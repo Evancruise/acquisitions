@@ -77,7 +77,7 @@ export const createUsersTable = async () => {
       )
     `;
 
-    const admin_user = await createUser({ name: "admin", email: "admin@gmail.com", password: process.env.DB_PASSWORD, role: "system manager", note: "none" });
+    const admin_user = await createUser({ name: process.env.NAME, email: process.env.ACCOUNT, password: process.env.DB_PASSWORD, role: "system manager", note: "none" });
 
     console.log("✅ users 資料表建立完成");
   } catch (e) {

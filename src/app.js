@@ -75,8 +75,6 @@ app.set("views", path.join(__dirname, "views"));
 app.use(expressLayouts);
 app.set("layout", "layout"); // 預設母版 layout.ejs
 
-app.get('/', loginPage);
-
 app.get('/health', (req, res) => {
     res.status(200).json({ status: 'OK', timestamp: new Date().toISOString(), uptime: process.uptime() });
 });

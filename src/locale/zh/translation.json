@@ -1,7 +1,13 @@
 {
+    "setting": "使用設定",
+    "privacy": "隱私設定",
+    "loginPage": {
+        "title": "使用者登入"
+    },
     "dashboard": {
         "title": "首頁",
-        "content_1": "歡迎使用"
+        "content_1": "歡迎使用",
+        "scan_now": "立即檢測"
     },
     "record": {
         "title": "個人病歷紀錄",
@@ -21,6 +27,15 @@
     },
     "rebind_account": {
         "title": "重新綁定"
+    },
+    "reminder": {
+        "title": "回診提醒"
+    },
+    "tracking": {
+        "title": "健康追蹤"
+    },
+    "education": {
+        "title": "衛教宣傳"
     },
     "logout": "登出",
     "title": "台大影像醫學部",

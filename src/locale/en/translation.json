@@ -1,7 +1,13 @@
 {
+    "setting": "System setting",
+    "privacy": "Privacy",
+    "loginPage": {
+        "title": "User loggin"
+    },
     "dashboard": {
         "title": "Home page",
-        "content_1": "Welcome"
+        "content_1": "Welcome",
+        "scan_now": "Scan now"
     },
     "record": {
         "title": "Record",
@@ -21,6 +27,15 @@
     },
     "rebind_account": {
         "title": "Rebind account"
+    },
+    "reminder": {
+        "title": "Reminder"
+    },
+    "tracking": {
+        "title": "Tracking"
+    },
+    "education": {
+        "title": "Education"
     },
     "logout": "Logout",
     "title": "Department of Medical Imaging",

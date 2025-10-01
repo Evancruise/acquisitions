@@ -35,7 +35,9 @@ import { register,
         resend,
         sys_export,
         reset,
-        sys_import} from '#controllers/auth.controller.js';
+        sys_import,
+        homepage,
+        processing} from '#controllers/auth.controller.js';
 // import { authenticateToken, authorizeRoles } from '#middleware/users.middleware.js';
 // import { sign } from 'jsonwebtoken';
 import multer from "multer";
@@ -61,6 +63,8 @@ router.use("/static", express.static(path.join(process.cwd(), "public")));
 
 router.get("/register", register);
 router.get("/loginPage", loginPage);
+router.get("/homepage", homepage);
+router.post("/processing", processing);
 
 router.get("/dashboard", dashboard);
 router.get("/record", record);

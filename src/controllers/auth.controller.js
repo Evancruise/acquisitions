@@ -270,15 +270,36 @@ export const signup = async (req, res, next) => {
   }
 };
 
+export const processing = async (req, res) => {
+    const body = req.body;
+    const login_role = body.login_role;
+    return res.status(201).json({ layout: false, login_role: login_role, success: true, redirect: `/api/auth/loginPage?login_role=${login_role}` });
+};
+
+export const homepage = async (req, res) => {
+    res.render("homepage", { layout: false });
+};
+
 // ✅ 登入
-export const loginPage = async(req, res) => {
-    res.render("loginPage", { layout: false });
+export const loginPage = async (req, res) => {
+    let login_role = req?.query.login_role;
+    let name = "", email = "";
+
+    logger.info(`login_role: ${login_role}`);
+
+    if (login_role == "professor") {
+        name = process.env.NAME;
+        email = process.env.ACCOUNT;
+    }
+
+    res.render("loginPage", { layout: false, login_role: login_role, name: name, email: email });
 };
 
 export const signin = async (req, res, next) => {
   try {
 
     logger.info(`req.body: ${JSON.stringify(req.body)}`);
+
     const validationResult = signinSchema.safeParse(req.body);
 
     if (!validationResult.success) {
@@ -293,6 +314,7 @@ export const signin = async (req, res, next) => {
     logger.info(`email: ${email}`);
 
     const user = await findUser("email", email);
+    const login_role = req.body.login_role;
 
     logger.info(`User: ${user}`);
 
@@ -347,7 +369,7 @@ export const signin = async (req, res, next) => {
     logger.info(`SIGN secret hex: ${Buffer.from(process.env.JWT_SECRET).toString("hex")}`);
 
     const token = jwt.sign(
-      { id: user.id, name: user.name, email: user.email, password: user.password, role: user.role },
+      { id: user.id, name: user.name, email: user.email, password: user.password, role: user.role, login_role: login_role },
       process.env.JWT_SECRET,
       { expiresIn: config.expireTime },
     );
@@ -391,13 +413,13 @@ export const signout = (req, res) => {
   res.status(200).render("loginPage", { layout: false, message: "Logged out successfully" });
 };
 
-function priority_from_role(role) {
+function priority_from_role(role, system_role = null) {
   let priority = -1;
   if (role == "tester") {
     priority = 3;
   } else if (role == "resource manager") {
     priority = 2;
-  } else if (role == "system manager") {
+  } else if (role == "system manager" && system_role == "professor") {
     priority = 1;
   }
   logger.info(`priority = ${priority}`);
@@ -416,7 +438,7 @@ export const dashboard = (req, res) => {
     logger.info(`decoded.name: ${decoded.name}`);
     logger.info(`req.t: ${req.t}`);
 
-    res.render("dashboard", { name: decoded.name, t: req.t, path: "/api/auth/dashboard", priority: priority_from_role(decoded.role), layout: "layout" });
+    res.render("dashboard", { name: decoded.name, t: req.t, path: "/api/auth/dashboard", priority: priority_from_role(decoded.role, decoded.login_role), layout: "layout" });
   } catch (err) {
     console.error("JWT 驗證失敗:", err);
     return res.redirect("/api/auth/loginPage");
