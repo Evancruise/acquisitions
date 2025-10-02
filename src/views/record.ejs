@@ -25,6 +25,12 @@
     <% }) %>
 <% }) %>
 
+<div class="pagination" id="pagination"></div>
+
+<div class="center-btn">
+    <a href="/api/auth/dashboard" class="btn-return">回首頁</a>
+</div>
+
 <!-- 浮動新增按鈕，導向「新增頁面」 -->
 <a class="fab" data-bs-toggle="modal" data-bs-target="#newRecordModal">
     <i class="fas fa-plus"></i>
@@ -243,7 +249,7 @@
                         <i class="fas fa-camera-retro"></i>開始辨識
                     </button>
                     <button type="button" 
-                            id="check_result" 
+                            id="check_result_edit" 
                             class="btn btn-secondary btn-lg" 
                             style="width: 48%;" 
                             data-bs-toggle="modal" 

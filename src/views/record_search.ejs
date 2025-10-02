@@ -34,12 +34,12 @@
                     <option value="red">紅燈 (嚴重等級)</option>
                 </select>
             </div>
-        </div>
 
-        <div class="btn-row">
-            <button type="button" class="btn btn-warning">匯入</button>
-            <button type="button" class="btn btn-primary" id="btn-search">查詢</button>
-            <button type="submit" id="export_data" name="action" value="export" class="btn btn-danger">匯出</button>
+            <div class="btn-row">
+                <!-- <button type="button" class="btn btn-warning">匯入</button> -->
+                <button type="button" class="btn btn-primary" id="btn-search">查詢</button>
+                <!-- <button type="submit" id="export_data" name="action" value="export" class="btn btn-danger">匯出</button> -->
+            </div>
         </div>
     </div>
 
@@ -47,11 +47,11 @@
         <table id="dataTable" aria-label="上傳紀錄表格">
             <thead>
             <tr>
-                <th style="width:16%">影像案例編號</th>
+                <th style="width:17%">影像案例編號</th>
                 <th style="width:16%">建立日期</th>
-                <th style="width:17%">上傳日期</th>
-                <th style="width:12%">上傳人員</th>
-                <th style="width:12%">分析狀態</th>
+                <th style="width:16%">上傳日期</th>
+                <th style="width:16%">上傳人員</th>
+                <th style="width:16%">分析狀態</th>
                 <th>備註</th>
                 <th></th>
             </tr>
@@ -62,6 +62,10 @@
 </form>
 
 <div class="pagination" id="pagination"></div>
+
+<div class="center-btn">
+    <a href="/api/auth/dashboard" class="btn-return">回首頁</a>
+</div>
 
 <script id="rows-data" type="application/json">
   <%- JSON.stringify(grouped_records) %>

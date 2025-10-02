@@ -373,6 +373,40 @@ button {
     transform: rotate(180deg);
 }
 
+.center-btn {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.btn-return {
+  display: inline-block;
+  padding: 0.6rem 1.2rem;
+  background: #3aa3d1;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 8px rgba(58, 163, 209, 0.3);
+}
+
+/* 滑鼠移上去：顏色加深 + 微浮起 */
+.btn-return:hover {
+  background: #2a8ab3;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 14px rgba(58, 163, 209, 0.4);
+  text-decoration: none;
+  color: #fff;
+}
+
+/* 點擊時：縮小一點 */
+.btn-return:active {
+  transform: scale(0.95);
+  box-shadow: 0 2px 6px rgba(58, 163, 209, 0.4);
+}
+
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(-5px); }
     to { opacity: 1; transform: translateY(0); }

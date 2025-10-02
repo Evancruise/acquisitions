@@ -415,6 +415,9 @@ export const signout = (req, res) => {
 
 function priority_from_role(role, system_role = null) {
   let priority = -1;
+
+  logger.info(`role: ${role}, system_role: ${system_role}`);
+
   if (role == "tester") {
     priority = 3;
   } else if (role == "resource manager") {
@@ -502,7 +505,7 @@ export const record = async (req, res) => {
     return res.status(201).render("record", 
     { layout: "layout", 
       grouped_records: grouped, 
-      priority: priority_from_role(decoded.role), 
+      priority: priority_from_role(decoded.role, decoded.login_role), 
       path: "/api/auth/record", 
       id: decoded.id, 
       patient_id: `${decoded.id}-${length}`,
@@ -731,7 +734,7 @@ export const record_search = async (req, res) => {
     { layout: "layout",  
       grouped_records: grouped, 
       today_date: (new Date()).toISOString().split("T")[0],
-      priority: priority_from_role(decoded.role), 
+      priority: priority_from_role(decoded.role, decoded.login_role), 
       path: "/api/auth/record_search", 
       token: token });
 };
@@ -825,7 +828,7 @@ export const account_management = async (req, res) => {
       { layout: "layout",  
         grouped_accounts: grouped, 
         today_date: (new Date()).toISOString().split("T")[0],
-        priority: priority_from_role(decoded.role), 
+        priority: priority_from_role(decoded.role, decoded.login_role), 
         path: "/api/auth/account_management", 
         token: token,
         config: cur_config});
@@ -1060,7 +1063,7 @@ export const rebind_page = async (req, res) => {
         logger.info(`decoded: ${JSON.stringify(decoded)}`);
         logger.info(`decoded.role: ${decoded.role}`);
 
-        return res.status(201).render("rebind_page", { layout: "layout", priority: priority_from_role(decoded.role), path: "/api/auth/rebind_page", token: token });
+        return res.status(201).render("rebind_page", { layout: "layout", priority: priority_from_role(decoded.role, decoded.login_role), path: "/api/auth/rebind_page", token: token });
     } catch (err) {
         logger.info(`rebind_page error: `, err.message);
         return res.redirect("/api/auth/loginPage");
@@ -1135,7 +1138,7 @@ export const recycle_bin = async (req, res) => {
         return res.status(201).render("recycle_bin", 
         { layout: "layout", 
           grouped_records: grouped, 
-          priority: priority_from_role(decoded.role), 
+          priority: priority_from_role(decoded.role, decoded.login_role), 
           path: "/api/auth/recycle_bin", 
           id: decoded.id, 
           patient_id: `${decoded.id}-${length}`,
@@ -1283,7 +1286,7 @@ export const quickchangepwd = (req, res) => {
     return res.status(200).render(
         "quick_changepwd", { 
             path: "/api/auth/quick_changepwd", 
-            priority: priority_from_role(decoded.role), 
+            priority: priority_from_role(decoded.role, decoded.login_role), 
             layout: "layout", 
             name: decoded.name,
             email: decoded.email });

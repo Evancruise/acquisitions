@@ -1,148 +1,117 @@
-/* 主內容容器 */
-.main-content {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 2rem;
-  background: #f8f9fa;
-  min-height: 100vh;
-  font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  color: #333;
-}
-
-/* QR 綁定區塊 */
 .rebind-pwd-container {
-  background: #fff;
-  padding: 2rem;
-  border-radius: 12px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-  max-width: 500px;
-  width: 100%;
-  text-align: center;
+    max-width: 500px;
+    margin: 2rem auto;
+    padding: 1.5rem;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    font-family: "Segoe UI", Arial, sans-serif;
+    text-align: center;
 }
 
-/* QR Code */
-#qr-image {
-  width: 250px;
-  height: auto;
-  border: 4px solid #e9ecef;
-  border-radius: 8px;
-  margin: 0 auto;
-  margin-bottom: 1rem;
-  transition: transform 0.2s ease;
+/* QR 區塊 */
+.rebind-pwd-container img#qr-image {
+    width: 250px;
+    margin: 0 auto;
+    display: block;
 }
 
-#qr-image:hover {
-  transform: scale(1.05);
+.rebind-pwd-container .form-group {
+    margin-bottom: 1rem;
 }
 
-/* 倒數文字 */
-#countdown {
-  font-weight: bold;
-  color: #0d6efd;
+.rebind-pwd-container .form-group div {
+    margin-top: 0.5rem;
+    font-size: 14px;
+    color: #555;
 }
 
-/* 通用按鈕樣式 */
-button {
-  display: inline-block;
-  font-size: 15px;
-  font-weight: 500;
-  padding: 0.6rem 1.2rem;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
+/* 按鈕通用樣式 */
+.rebind-pwd-container button {
+    padding: 0.6rem 1.2rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.15s ease, opacity 0.2s ease;
 }
 
-/* 重新生成 QR 按鈕 */
+/* 個別按鈕色系 */
 #reload-btn {
-  background: #f1f3f5;
-  color: #333;
-  margin-top: 0.75rem;
+    margin-top: 0.8rem;
+    background: #f59e0b;
+    color: #fff;
 }
 
-#reload-btn:hover {
-  background: #e9ecef;
-}
-
-/* 打開相機掃描按鈕 */
 #btn-toggle-scanner {
-  background: #0d6efd;
-  color: #fff;
-  margin-top: 1rem;
+    background: #0d6efd;
+    color: #fff;
 }
 
-#btn-toggle-scanner:hover {
-  background: #0b5ed7;
+#capture-btn {
+    background: #10b981;
+    color: #fff;
 }
 
-/* 相機容器 */
-#scanner-container {
-  margin-top: 1rem;
-  background: #fafafa;
-  padding: 1rem;
-  border: 1px solid #dee2e6;
-  border-radius: 10px;
-  display: none;
-}
-
-#camera {
-  width: 100%;
-  max-width: 320px;
-  border: 2px solid #ccc;
-  border-radius: 6px;
-  background: #000;
-}
-
-#snapshot {
-  margin-top: 0.5rem;
-  max-width: 320px;
-  border-radius: 6px;
-  border: 2px solid #ddd;
-}
-
-/* 拍照/重置/上傳按鈕 */
-#capture-btn,
-#send-scan-btn-recap,
 #send-scan-btn {
-  background: #198754;
-  color: #fff;
-  margin-top: 0.75rem;
-  width: 100%;
+    background: #409eff;
+    color: #fff;
 }
 
-#capture-btn:hover,
-#send-scan-btn-recap:hover,
-#send-scan-btn:hover {
-  background: #157347;
+#send-scan-btn-recap {
+    background: #ef4444;
+    color: #fff;
+}
+
+/* 按鈕 hover 效果 */
+.rebind-pwd-container button:hover {
+    transform: translateY(-1px);
+    opacity: 0.9;
+}
+
+/* 掃描區塊 */
+#scanner-container {
+    margin-top: 1rem;
+    display: none;
+    text-align: center;
+}
+
+#scanner-container video {
+    width: 300px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+}
+
+#scanner-container canvas {
+    display: none;
+    margin-top: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+}
+
+/* 按鈕列 */
+.scan-btn-row {
+    display: flex;
+    justify-content: center;
+    gap: 0.6rem;
+    margin-top: 0.8rem;
 }
 
 /* 掃描結果文字 */
 #scan-result {
-  margin-top: 1rem;
-  font-size: 14px;
-  color: #444;
-  word-break: break-all;
+    margin-top: 1rem;
+    font-size: 14px;
+    color: #333;
 }
 
-.scan-btn-row {
-  display: flex;
-  gap: 0.5rem; /* 按鈕間距 */
-  margin-top: 0.75rem;
-  justify-content: center; /* 水平置中 */
-}
+/* 響應式 */
+@media (max-width: 480px) {
+    .rebind-pwd-container {
+        padding: 1.2rem;
+    }
 
-.scan-btn-row button {
-  flex: 1; /* 讓兩個按鈕等寬 */
-}
-
-#qr-image,
-#camera,
-#snapshot,
-#capture-btn,
-#send-scan-btn-recap,
-#send-scan-btn {
-  display: block;
-  margin: 0.5rem auto; /* 自動置中 */
-  text-align: center;
+    #scanner-container video {
+        width: 100%;
+    }
 }

@@ -257,12 +257,14 @@ document.addEventListener("DOMContentLoaded", () => {
             const resultModal = document.getElementById("resultRecordModal");
             const triggerId = resultModal.getAttribute("data-trigger-id");
 
+            console.log(`triggerId: ${triggerId}`);
+
             const bsResultModal = bootstrap.Modal.getInstance(resultModal);
             bsResultModal.hide();
 
-            if (triggerId === "newRecordModal") {
+            if (triggerId === "check_result_add") {
               bootstrap.Modal.getOrCreateInstance(document.getElementById("newRecordModal")).show();
-            } else if (triggerId === "editRecordModal") {
+            } else if (triggerId === "check_result_edit") {
               bootstrap.Modal.getOrCreateInstance(document.getElementById("editRecordModal")).show();
             }
         });

@@ -3,9 +3,9 @@ import { loadModal, showModal } from "./modal.js";
 loadModal('modal-container');
 
 const recycle_form = document.getElementById("recycle_form");
-const viewModal = document.getElementById("viewRecordModal");
-const resultModal = document.getElementById("resultRecordModal");
-const goBackBtn = document.getElementById("btnGoBack");
+const viewModal = document.getElementById("viewRecordModal_rec");
+const resultModal = document.getElementById("resultRecordModal_rec");
+const goBackBtn = document.getElementById("btnGoBack_rec");
 const recordlink = document.querySelectorAll(".record-link");
 let currentRecord = {};
 
@@ -132,7 +132,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // 回上一頁時重新填入 currentRecord
         goBackBtn.addEventListener("click", () => {
             bootstrap.Modal.getInstance(resultModal).hide();
-            const view = document.getElementById("viewRecordModal");
+            const view = document.getElementById("viewRecordModal_rec");
             bootstrap.Modal.getOrCreateInstance(view).show();
 
             view.querySelector("input[name='name']").value = currentRecord.name;

@@ -21,7 +21,7 @@ import Backend from "i18next-fs-backend";
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
-import { loginPage } from '#controllers/auth.controller.js';
+import { homepage, loginPage } from '#controllers/auth.controller.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -82,6 +82,8 @@ app.get('/health', (req, res) => {
 app.get('/api', (req, res) => {
     res.status(200).json({ message: 'Acquisitions API is running!' });
 });
+
+app.get('/', homepage);
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', usersRoutes);

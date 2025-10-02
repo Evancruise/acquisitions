@@ -4,7 +4,7 @@
         <div class="record-card">
             <a class="record-link"
             data-bs-toggle="modal"
-            data-bs-target="#viewRecordModal"
+            data-bs-target="#viewRecordModal_rec"
             data-name="<%= item.name %>"
             data-gender="<%= item.gender %>"
             data-age="<%= item.age %>"
@@ -25,8 +25,14 @@
     <% }) %>
 <% }) %>
 
+<div class="pagination" id="pagination"></div>
+
+<div class="center-btn">
+    <a href="/api/auth/dashboard" class="btn-return">回首頁</a>
+</div>
+
 <!-- 檢視 Modal 彈窗 -->
-<div class="modal fade" id="viewRecordModal" tabindex="-1" aria-labelledby="viewRecordModalLabel" aria-hidden="true">
+<div class="modal fade" id="viewRecordModal_rec" tabindex="-1" aria-labelledby="viewRecordModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <form method="POST" enctype="multipart/form-data" action="/api/auth/recycle_record" class="card p-4" id="recycle_form">
@@ -125,7 +131,7 @@
                             id="check_result" 
                             class="btn btn-secondary btn-lg"
                             data-bs-toggle="modal" 
-                            data-bs-target="#resultRecordModal">
+                            data-bs-target="#resultRecordModal_rec">
                             <i class="far fa-file-alt"></i>查看辨識結果
                         </button>
                     </div>
@@ -147,7 +153,7 @@
 </div>
 
 <!-- 辨識結果 Modal 彈窗 -->
-<div class="modal fade" id="resultRecordModal" tabindex="-1" aria-labelledby="resultRecordModalLabel" aria-hidden="true">
+<div class="modal fade" id="resultRecordModal_rec" tabindex="-1" aria-labelledby="resultRecordModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <form method="POST" enctype="multipart/form-data" action="/record/result/{{ user_id }}" class="card p-4" id="result_form">
@@ -211,10 +217,10 @@
 
                 <div class="modal-footer-1">
                     <button type="button" 
-                            id="btnGoBack" 
+                            id="btnGoBack_rec" 
                             class="btn btn-primary" 
                             data-bs-toggle="modal" 
-                            data-bs-target="#viewRecordModal">
+                            data-bs-target="#viewRecordModal_rec">
                         <i class="fas fa-arrow-alt-circle-left"></i> 回上一頁
                     </button>
 
