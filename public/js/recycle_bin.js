@@ -92,7 +92,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 console.log(`picVal: ${picVal}`);
 
                 if (img) {
-                    img.src = picVal?.length !== 0 ? picVal : `/static/images/${i}.png`; // 如果沒有就顯示預設圖
+                    img.src = (picVal && picVal.split('/')[3] !== "undefined") ? picVal : `/static/images/${i}.png`; // 如果沒有就顯示預設圖
                 }
 
                 console.log("img.src:", img.src);

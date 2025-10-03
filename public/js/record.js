@@ -11,6 +11,14 @@ const goBackBtn = document.getElementById("btnGoBack");
 
 document.addEventListener("DOMContentLoaded", () => {
     // 定義 parts（和 EJS 一樣要有 1~8 的代碼）
+    let uploaded_msg = null;
+
+    fetch("/api/auth/lang/zh")
+    .then(res => res.json())
+    .then(dict => {
+        uploaded_msg = dict.uploaded;
+    });
+
     const parts = ["1","2","3","4","5","6","7","8"];
 
     parts.forEach(code => {
@@ -38,7 +46,7 @@ document.addEventListener("DOMContentLoaded", () => {
               console.log(`preview.src=${preview.src}`);
             };
             reader.readAsDataURL(file);
-            btn.innerText = "已上傳";
+            btn.innerText = uploaded_msg;
             input2.value = `static/uploads/${patient_id}/${file.name}`;
           }
         });
@@ -69,7 +77,8 @@ document.addEventListener("DOMContentLoaded", () => {
               console.log(`preview.src=${preview.src}`);
             };
             reader.readAsDataURL(file);
-            btn.innerText = "已上傳";
+            btn.innerText = uploaded_msg;
+            console.log(`btn.innerText: ${btn.innerText}`);
             input2.value = `static/uploads/${patient_id}/${file.name}`;
           }
         });
@@ -230,11 +239,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 const input = editModal.querySelector(`#upload2_edit_${i}`); // hidden input
                 const img = editModal.querySelector(`#preview_edit_${i}`);  // 預覽 <img>
 
-                console.log("picVal:", picVal);
+                console.log("picVal.length:", picVal.length);
 
                 if (input && img) {
                     input.value = picVal || "";
-                    img.src = picVal.split('/')[3] !== "undefined" || picVal.length !== 0 ? picVal : `/static/images/${i}.png`; // 如果沒有就顯示預設圖
+                    img.src = (picVal && picVal.split('/')[3] !== "undefined") ? picVal : `/static/images/${i}.png`; // 如果沒有就顯示預設圖
                 }
             }
         });

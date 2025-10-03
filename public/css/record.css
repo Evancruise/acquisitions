@@ -220,3 +220,29 @@
 .btn-danger:hover {
   background-color: #c82333;
 }
+
+.risk-level {
+  display: flex;
+  justify-content: center;  /* 水平置中 */
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.risk-light {
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  display: inline-block;
+  opacity: 0.3;  /* 預設淡化 */
+  transition: opacity 0.3s, transform 0.3s;
+}
+
+.risk-light.red    { background-color: #e74c3c; }
+.risk-light.yellow { background-color: #f1c40f; }
+.risk-light.green  { background-color: #2ecc71; }
+
+.risk-light.active {
+  opacity: 1;           /* 高亮 */
+  transform: scale(1.2); /* 稍微放大凸顯 */
+  box-shadow: 0 0 10px rgba(0,0,0,0.4);
+}

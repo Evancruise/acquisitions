@@ -34,6 +34,12 @@ let configPath = path.join(process.cwd(), "config", "settings.json");
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
+export const lang_get = (req, res) => {
+  res.json({
+    uploaded: req.t("record.already_upload")
+  });
+};
+
 export const deleteUserTable = async (req, res) => {
     removeUserTable();
     logger.info("✅ Delete user table");
@@ -512,6 +518,7 @@ export const record = async (req, res) => {
       new_patient_id: `${decoded.id}-${length+1}`,
       name: decoded.name,
       token: token, 
+      t: req.t,
       formatDateTime });
 };
 
@@ -736,6 +743,7 @@ export const record_search = async (req, res) => {
       today_date: (new Date()).toISOString().split("T")[0],
       priority: priority_from_role(decoded.role, decoded.login_role), 
       path: "/api/auth/record_search", 
+      t: req.t,
       token: token });
 };
 
@@ -831,6 +839,7 @@ export const account_management = async (req, res) => {
         priority: priority_from_role(decoded.role, decoded.login_role), 
         path: "/api/auth/account_management", 
         token: token,
+        t: req.t,
         config: cur_config});
     } catch(err) {
       console.log("account_management error: ", err.message);
@@ -1063,7 +1072,7 @@ export const rebind_page = async (req, res) => {
         logger.info(`decoded: ${JSON.stringify(decoded)}`);
         logger.info(`decoded.role: ${decoded.role}`);
 
-        return res.status(201).render("rebind_page", { layout: "layout", priority: priority_from_role(decoded.role, decoded.login_role), path: "/api/auth/rebind_page", token: token });
+        return res.status(201).render("rebind_page", { layout: "layout", priority: priority_from_role(decoded.role, decoded.login_role), path: "/api/auth/rebind_page", token: token, t: req.t });
     } catch (err) {
         logger.info(`rebind_page error: `, err.message);
         return res.redirect("/api/auth/loginPage");
@@ -1144,6 +1153,7 @@ export const recycle_bin = async (req, res) => {
           patient_id: `${decoded.id}-${length}`,
           name: decoded.name,
           token: token, 
+          t: req.t,
           formatDateTime });
     } catch (err) {
         logger.info("recycle bin error: ", err.message);
@@ -1289,7 +1299,8 @@ export const quickchangepwd = (req, res) => {
             priority: priority_from_role(decoded.role, decoded.login_role), 
             layout: "layout", 
             name: decoded.name,
-            email: decoded.email });
+            email: decoded.email,
+            t: req.t });
   } catch (err) {
     console.error("quickchangepwd error:", err.message);
     return res.redirect("/api/auth/loginPage");
