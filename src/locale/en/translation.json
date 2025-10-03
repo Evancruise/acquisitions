@@ -40,7 +40,8 @@
         "diag_explain": "Diagnostic Content",
         "suggestion": "Suggestion",
         "upload_img_appoint": "Upload / Appointment",
-        "category_result": "Overall Risk Rank"
+        "category_result": "Overall Risk Rank",
+        "infer_again_msg": "Inferencing Again"
     },
     "record_search": {
         "title": "Record (All)"
@@ -62,7 +63,15 @@
         "change_pwd_msg": "Confirm Change Password"
     },
     "rebind_account": {
-        "title": "Rebind account"
+        "title": "Rebind account",
+        "refresh_in": "Refresh In",
+        "regenerate": "Regenerate",
+        "scan": "Open",
+        "capture": "Capture",
+        "reset": "Reset",
+        "verify": "Verify",
+        "close_msg": "Close",
+        "open_msg": "Open"
     },
     "reminder": {
         "title": "Reminder"
@@ -84,5 +93,6 @@
     "delete": "Delete",
     "cancel": "Cancel",
     "return": "Return",
+    "second": "second(s)",
     "suggestion": "This rapid screening result is for reference only. The AI interpretation may be affected by lighting, shooting angle, and phone resolution, leading to errors or blind spots. It cannot replace a physician’s direct examination, and in some cases, a biopsy may be required for an accurate diagnosis. Regardless of symptoms, it is recommended to have a dental cleaning and oral examination every six months, or follow your dentist’s instructions for follow-up visits."
 }

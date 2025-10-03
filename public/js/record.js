@@ -10,13 +10,14 @@ const resultModal = document.getElementById("resultRecordModal");
 const goBackBtn = document.getElementById("btnGoBack");
 
 document.addEventListener("DOMContentLoaded", () => {
-    // 定義 parts（和 EJS 一樣要有 1~8 的代碼）
     let uploaded_msg = null;
+    let infer_again_msg = null;
 
     fetch("/api/auth/lang/zh")
     .then(res => res.json())
     .then(dict => {
         uploaded_msg = dict.uploaded;
+        infer_again_msg = dict.infer_again_msg;
     });
 
     const parts = ["1","2","3","4","5","6","7","8"];
@@ -246,6 +247,19 @@ document.addEventListener("DOMContentLoaded", () => {
                     img.src = (picVal && picVal.split('/')[3] !== "undefined") ? picVal : `/static/images/${i}.png`; // 如果沒有就顯示預設圖
                 }
             }
+
+            const status = link.getAttribute(`data-status`);
+            
+            if (status !== "finished") {
+                document.getElementById("infer").style.width = "100%";
+                document.getElementById("check_result_edit").style.display = "none";
+            } else {
+                document.getElementById("infer").innerText = infer_again_msg;
+                document.getElementById("infer").style.width = "48%";
+                document.getElementById("check_result_edit").style.display = true;
+                document.getElementById("check_result_edit").style.width = "48%";
+            }
+            
         });
     }
 

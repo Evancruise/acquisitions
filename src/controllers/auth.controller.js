@@ -36,7 +36,10 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 export const lang_get = (req, res) => {
   res.json({
-    uploaded: req.t("record.already_upload")
+    uploaded: req.t("record.already_upload"),
+    infer_again_msg: req.t("record.infer_again_msg"),
+    close_msg: req.t("rebind_account.close_msg"),
+    open_msg: req.t("rebind_account.open_msg")
   });
 };
 

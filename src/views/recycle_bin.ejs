@@ -1,5 +1,5 @@
 <% Object.entries(grouped_records).forEach(([date_display, items]) => { %>
-    <div class="date-divider"<%= date_display %></div>
+    <div class="date-divider"><%= date_display %></div>
     <% items.forEach(item => { %>
         <div class="record-card">
             <a class="record-link"
@@ -19,7 +19,21 @@
             data-pic6="<%= item.img6 %>"
             data-pic7="<%= item.img7 %>"
             data-pic8="<%= item.img8 %>">
-                <%= formatDateTime(item.created_at) %>
+                <div class="record-content">
+                    <div class="record-icon">
+                        <i class="<%= item.status === 'pending' 
+                            ? 'fa-solid fa-stethoscope' 
+                            : item.status === 'loading' 
+                                ? 'fa-solid fa-spinner fa-spin' 
+                                : item.status === 'finished' 
+                                ? 'fa-solid fa-notes-medical' 
+                                : 'fa-regular fa-circle-question' %>"></i>
+                    </div>
+                    <div class="record-text">
+                        <div class="record-id"><%= item.patient_id %></div>
+                        <div class="record-time"><%= formatDateTime(item.created_at) %></div>
+                    </div>
+                </div>
             </a>
         </div>
     <% }) %>
@@ -143,9 +157,9 @@
                     </button>
                     <br>
                     <button type="submit" name="action" value="delete" class="btn btn-primary">
-                        <i class="fas delete"></i> <%= t("recycle_bin.confirm_delete") %>
+                        <i class="fa-solid fa-trash-can"></i> <%= t("recycle_bin.confirm_delete") %>
                     </button>
-                    <button type="button" class="btn btn-secondary btn-lg" data-bs-dismiss="modal" style="width: 48%;"> <%= t("cancel") %> </button>
+                    <button type="button" class="btn btn-secondary btn-lg" data-bs-dismiss="modal" style="width: 48%;"> <i class="fa-regular fa-rectangle-xmark"></i> <%= t("cancel") %> </button>
                 </div>
             </form>
         </div>
