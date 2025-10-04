@@ -13,7 +13,7 @@ import { signupSchema, signinSchema } from "#validations/auth.validation.js";
 import bcrypt from 'bcrypt';
 import jwt from "jsonwebtoken";
 import logger from '#config/logger.js';
-import { getUser, updateUser, updateRegister, updateUserTableFromRegister, deleteUser, check_user_login, updateUserPassword, getTempUser } from "#src/services/users.service.js";
+import { getUser, updateUser, updateRegister, updateUserTableFromRegister, deleteUser, check_user_login, updateUserPassword, getTempUser, markQrUsed } from "#src/services/users.service.js";
 import { findRecord, findDiscardRecord } from "#src/services/records.service.js";
 import { movefiles, deletefiles } from "#utils/func.js";
 import sgMail from "@sendgrid/mail";
@@ -1103,7 +1103,8 @@ export const rebind_qr = async (req, res) => {
 
 export const generate_qr = async (req, res) => {
     const qr_token = uuidv4();
-    const url = `http://localhost:5000/api/auth/scan_result?qrContent=${qr_token}`;
+    // const url = `http://localhost:5000/api/auth/scan_result?qrContent=${qr_token}`;
+    const url = `${req.protocol}://${req.get("host")}/api/auth/scan_result?qrContent=${qr_token}`;
     const expired_at = new Date(Date.now() + 5 * 60 * 1000).toISOString(); // 5 分鐘有效
     logger.info(`expiresAt: ${expired_at}`); // Sat Oct 04 2025 16:45:13 GMT+0800 (GMT+08:00)
 
@@ -1117,21 +1118,6 @@ export const generate_qr = async (req, res) => {
         qrImage
     });
 };
-
-async function verifyQRCode(qrContent) {
-  // 假設 QR code 內容對應到 user table 的一個 token
-  const user = await sql`SELECT * FROM users WHERE qr_token = ${qrContent}`;
-
-  if (user.rows.length === 0) {
-    return res.status(401).json({success: false, message: "無效的 QR Code"});
-  }
-
-  // ✅ 驗證通過 → 可以更新登入狀態 / 產生 JWT token
-  return res.status(201).json({ 
-    success: true,
-    userId: user.rows[0].id 
-  });
-}
 
 export const scan_result = async (req, res) => {
     try {
@@ -1149,11 +1135,12 @@ export const scan_result = async (req, res) => {
           return res.status(400).json({ success: false, message: "QR Code 已被使用" });
       }
 
-      if (Date.now() > record.expired_at) {
+      if (Date.now() > new Date(record.expired_at).getTime()) {
           return res.status(400).json({ success: false, message: "QR Code 已過期" });
       }
 
-      record.is_used = true;
+      // record.is_used = true;
+      const updated = await markQrUsed(qrContent);
 
       const token = jwt.sign(
         { qr_token: qrContent }, 
@@ -1163,12 +1150,33 @@ export const scan_result = async (req, res) => {
 
       res.cookie("token", token, {
         httpOnly: true,
-        secure: true,    // 建議上線時開啟
+        secure: process.env.NODE_ENV === "production",
         sameSite: "strict",
         path: '/',
       });
 
-      res.render("dashboard", { name: "customer", t: req.t, path: "/api/auth/dashboard", priority: priority_from_role("tester"), layout: "layout" });
+      // res.render("dashboard", { name: "customer", t: req.t, path: "/api/auth/dashboard", priority: priority_from_role("tester"), layout: "layout" });
+
+      if (req.headers.accept?.includes("application/json")) {
+        // 如果是 API 呼叫（手機 App）
+        return res.json({ success: true, message: "登入成功", redirect: "/api/auth/dashboard", token });
+      } else {
+        // 如果是瀏覽器掃描
+        res.cookie("token", token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "strict",
+          path: "/",
+        });
+        return res.render("dashboard", { 
+          name: "customer", 
+          t: req.t, 
+          path: "/api/auth/dashboard", 
+          priority: priority_from_role("tester"), 
+          layout: "layout" 
+        });
+      }
+
     } catch (err) {
       console.error("Scan result error:", err);
       res.status(500).json({ success: false, message: "伺服器錯誤" });

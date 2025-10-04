@@ -111,6 +111,28 @@ export const updateUserTableFromRegister = async (id, name) => {
 /*
 Update user
 */
+export const markQrUsed = async (qr_token) => {
+    const existingUser = await sql`SELECT * FROM users WHERE qr_token = ${qr_token}`;
+
+    console.log("Step 1 結果:", existingUser);
+
+    if (existingUser.length == 0) {
+      throw new Error(`User with qr_token ${qr_token} not exists`);
+    }
+
+    const updated = await sql`UPDATE users
+    SET is_used = true 
+    WHERE qr_token = ${qr_token}
+    RETURNING qr_token, is_used, expired_at`;
+
+    if (updated.length === 0) {
+      throw new Error(`Update failed: user with token ${qr_token} not found`);
+    }
+
+    logger.info("Updated users Successfully");
+    return updated[0];
+};
+
 export const updateUser = async (fieldname, value = null, updates = null) => {
     const existing = await getUser(fieldname, value);
 

@@ -19,6 +19,7 @@
   },
   "scripts": {
     "dev": "node --watch src/index.js",
+    "vercel": "vercel dev",
     "dev:docker": "node scripts/dev.js",
     "prod:docker": "node scripts/prod.js",
     "node": "node src/index.js",
