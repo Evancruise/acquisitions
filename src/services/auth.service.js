@@ -62,15 +62,19 @@ export const createUsersTable = async () => {
     await sql`
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
-        name VARCHAR(100) UNIQUE NOT NULL,
-        email VARCHAR(255) UNIQUE NOT NULL,
+        name VARCHAR(100) UNIQUE,
+        email VARCHAR(255) UNIQUE,
         password TEXT,
         retry_times INTEGER DEFAULT 5,
         role VARCHAR(50) DEFAULT 'tester',
+        login_role VARCHAR(50) DEFAULT 'patient',
         unit VARCHAR(100) DEFAULT 'personal',
+        is_used BOOLEAN DEFAULT false,
         note TEXT,
+        qr_token VARCHAR(255) UNIQUE,
         status VARCHAR(50) DEFAULT 'deactivated',
-        created_at TIMESTAMPTZ DEFAULT NOW(),       
+        created_at TIMESTAMPTZ DEFAULT NOW(), 
+        expired_at TIMESTAMPTZ,
         updated_at TIMESTAMPTZ DEFAULT NOW(),      
         allowed_loggin_at TIMESTAMPTZ DEFAULT NOW(),
         timezone VARCHAR(50) DEFAULT 'UTC'          
@@ -111,7 +115,37 @@ export const createRegister = async ({ name, email, role = "tester" }) => {
 }
 
 // ✅ 建立新使用者
-export const createUser = async ({ name, email, password, role = "tester", unit = "personal", note = "none" }) => {
+// 訪客 / 一般使用者
+export const createTempUser = async ({ qr_token, expired_at }) => {
+
+  logger.info(`qr_token: ${qr_token}, expired_at: ${expired_at}`);
+
+  try {
+    const existingUser = await sql`SELECT * FROM users WHERE qr_token = ${qr_token}`;
+
+    console.log("Step 1 結果:", existingUser);
+
+    if (existingUser.length > 0) {
+      throw new Error(`User with qr_token ${qr_token} already exists`);
+    }
+
+    const NewUser = await sql`
+      INSERT INTO users (qr_token, expired_at, is_used)
+      VALUES (${qr_token}, ${expired_at}, false)
+      RETURNING qr_token, expired_at, is_used
+    `;
+
+    logger.info(`Create user ${JSON.stringify(NewUser[0])} successful`);
+
+    return NewUser[0];
+  } catch (e) {
+    console.error("❌ createUser 發生錯誤:", e);
+    throw e;
+  }
+};
+
+// 專業使用者
+export const createUser = async ({ name, email, password, role = "tester", login_role = "patient", unit = "personal", note = "none" }) => {
   try {
     // raw SQL 查詢
     const existingUser = await sql`SELECT * FROM users WHERE email = ${email}`;
@@ -129,9 +163,9 @@ export const createUser = async ({ name, email, password, role = "tester", unit 
     console.log("🔍 Step 3: 插入新使用者");
 
     const newUser = await sql`
-      INSERT INTO users (name, email, password, role, unit, note)
-      VALUES (${name}, ${email}, ${password_hash}, ${role}, ${unit}, ${note})
-      RETURNING id, name, email, password, role, unit, note, status, created_at
+      INSERT INTO users (name, email, password, role, login_role, unit, note)
+      VALUES (${name}, ${email}, ${password_hash}, ${role}, ${login_role}, ${unit}, ${note})
+      RETURNING id, name, email, password, role, login_role, unit, note, status, created_at
     `;
 
     console.log("✅ Step 3 完成:", newUser[0]);

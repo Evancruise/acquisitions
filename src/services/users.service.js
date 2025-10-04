@@ -23,6 +23,18 @@ export const getRegister = async (fieldname, value) => {
 /*
 Get ID by User
 */
+export const getTempUser = async (qr_token) => {
+    const existingUser = await sql`SELECT * FROM users WHERE qr_token = ${qr_token}`;
+
+    console.log("Step 1 結果:", existingUser);
+
+    if (existingUser.length == 0) {
+      throw new Error(`User with qr_token ${qr_token} not exists`);
+    }
+
+    return existingUser[0];
+};
+
 export const getUser = async (fieldname, value) => {
     logger.info(`Search for ${fieldname}=${value}`);
     let result;

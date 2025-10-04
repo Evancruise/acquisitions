@@ -6,13 +6,14 @@ import { createUser,
          createRegisterTable, 
          removeRegisterTable,
          findRegister,
-         findUser } from "#services/auth.service.js";
+         findUser, 
+         createTempUser} from "#services/auth.service.js";
 import { createRecord, deleteRecord, updateRecord, recoverRecord, deleteDiscardRecord } from "#src/services/records.service.js";
 import { signupSchema, signinSchema } from "#validations/auth.validation.js";
 import bcrypt from 'bcrypt';
 import jwt from "jsonwebtoken";
 import logger from '#config/logger.js';
-import { getUser, updateUser, updateRegister, updateUserTableFromRegister, deleteUser, check_user_login, updateUserPassword } from "#src/services/users.service.js";
+import { getUser, updateUser, updateRegister, updateUserTableFromRegister, deleteUser, check_user_login, updateUserPassword, getTempUser } from "#src/services/users.service.js";
 import { findRecord, findDiscardRecord } from "#src/services/records.service.js";
 import { movefiles, deletefiles } from "#utils/func.js";
 import sgMail from "@sendgrid/mail";
@@ -26,6 +27,7 @@ import QRCode from "qrcode";
 import { config, default_config } from "#config/config.js";
 import { generateToken } from "#middleware/users.middleware.js";
 import { DateTime } from "luxon";
+import { v4 as uuidv4 } from "uuid";
 
 const upload = multer({ dest: "uploads/" });
 const upload_gb = multer({ dest: "uploads_gb/" });
@@ -305,6 +307,9 @@ export const loginPage = async (req, res) => {
 };
 
 export const signin = async (req, res, next) => {
+
+  logger.info(`sign triggerred!`);
+
   try {
 
     logger.info(`req.body: ${JSON.stringify(req.body)}`);
@@ -419,19 +424,17 @@ export const signout = (req, res) => {
   res.clearCookie("Path");
   res.clearCookie("SameSite");
   logger.info("✅ User signed out");
-  res.status(200).render("loginPage", { layout: false, message: "Logged out successfully" });
+  res.status(200).render("homepage", { layout: false, message: "Logged out successfully" });
 };
 
-function priority_from_role(role, system_role = null) {
+function priority_from_role(role) {
   let priority = -1;
-
-  logger.info(`role: ${role}, system_role: ${system_role}`);
 
   if (role == "tester") {
     priority = 3;
   } else if (role == "resource manager") {
     priority = 2;
-  } else if (role == "system manager" && system_role == "professor") {
+  } else if (role == "system manager") {
     priority = 1;
   }
   logger.info(`priority = ${priority}`);
@@ -447,10 +450,12 @@ export const dashboard = (req, res) => {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    logger.info(`decoded: ${JSON.stringify(decoded)}`);
     logger.info(`decoded.name: ${decoded.name}`);
     logger.info(`req.t: ${req.t}`);
 
-    res.render("dashboard", { name: decoded.name, t: req.t, path: "/api/auth/dashboard", priority: priority_from_role(decoded.role, decoded.login_role), layout: "layout" });
+    res.render("dashboard", { name: decoded.name, t: req.t, path: "/api/auth/dashboard", priority: priority_from_role(decoded.role), layout: "layout" });
   } catch (err) {
     console.error("JWT 驗證失敗:", err);
     return res.redirect("/api/auth/loginPage");
@@ -514,7 +519,7 @@ export const record = async (req, res) => {
     return res.status(201).render("record", 
     { layout: "layout", 
       grouped_records: grouped, 
-      priority: priority_from_role(decoded.role, decoded.login_role), 
+      priority: priority_from_role(decoded.role), 
       path: "/api/auth/record", 
       id: decoded.id, 
       patient_id: `${decoded.id}-${length}`,
@@ -744,7 +749,7 @@ export const record_search = async (req, res) => {
     { layout: "layout",  
       grouped_records: grouped, 
       today_date: (new Date()).toISOString().split("T")[0],
-      priority: priority_from_role(decoded.role, decoded.login_role), 
+      priority: priority_from_role(decoded.role), 
       path: "/api/auth/record_search", 
       t: req.t,
       token: token });
@@ -839,7 +844,7 @@ export const account_management = async (req, res) => {
       { layout: "layout",  
         grouped_accounts: grouped, 
         today_date: (new Date()).toISOString().split("T")[0],
-        priority: priority_from_role(decoded.role, decoded.login_role), 
+        priority: priority_from_role(decoded.role), 
         path: "/api/auth/account_management", 
         token: token,
         t: req.t,
@@ -1075,7 +1080,7 @@ export const rebind_page = async (req, res) => {
         logger.info(`decoded: ${JSON.stringify(decoded)}`);
         logger.info(`decoded.role: ${decoded.role}`);
 
-        return res.status(201).render("rebind_page", { layout: "layout", priority: priority_from_role(decoded.role, decoded.login_role), path: "/api/auth/rebind_page", token: token, t: req.t });
+        return res.status(201).render("rebind_page", { layout: "layout", priority: priority_from_role(decoded.role), path: "/api/auth/rebind_page", token: token, t: req.t });
     } catch (err) {
         logger.info(`rebind_page error: `, err.message);
         return res.redirect("/api/auth/loginPage");
@@ -1084,8 +1089,8 @@ export const rebind_page = async (req, res) => {
 
 export const rebind_qr = async (req, res) => {
     try {
-      const qrData = "user-binding-token-" + Date.now();
-      const qrImage = await QRCode.toDataURL(qrData);
+      const qr_token = uuidv4();
+      const qrImage = await QRCode.toDataURL(qr_token);
 
       const img = qrImage.replace(/^data:image\/png;base64,/, "");
       const imgBuffer = Buffer.from(img, "base64");
@@ -1096,14 +1101,77 @@ export const rebind_qr = async (req, res) => {
     }
 };
 
-export const scan_result = async (req, res) => {
-    const { qrContent } = req.body;
-    logger.info(`qrContent: ${qrContent}`);
+export const generate_qr = async (req, res) => {
+    const qr_token = uuidv4();
+    const url = `http://localhost:5000/api/auth/scan_result?qrContent=${qr_token}`;
+    const expired_at = new Date(Date.now() + 5 * 60 * 1000).toISOString(); // 5 分鐘有效
+    logger.info(`expiresAt: ${expired_at}`); // Sat Oct 04 2025 16:45:13 GMT+0800 (GMT+08:00)
 
-    if (qrContent && qrContent.startsWith("user-binding-token-")) {
-        return res.json({ success: true, message: "QR code valid", redirect: "/api/auth/rebind_page" });
-    } else {
-        return res.status(400).json({ success: false, message: "Invalid QR code" });
+    const new_user = await createTempUser({ qr_token, expired_at });
+
+    logger.info(`url: ${url}`);
+
+    const qrImage = await QRCode.toDataURL(url);
+
+    return res.status(201).json({
+        qrImage
+    });
+};
+
+async function verifyQRCode(qrContent) {
+  // 假設 QR code 內容對應到 user table 的一個 token
+  const user = await sql`SELECT * FROM users WHERE qr_token = ${qrContent}`;
+
+  if (user.rows.length === 0) {
+    return res.status(401).json({success: false, message: "無效的 QR Code"});
+  }
+
+  // ✅ 驗證通過 → 可以更新登入狀態 / 產生 JWT token
+  return res.status(201).json({ 
+    success: true,
+    userId: user.rows[0].id 
+  });
+}
+
+export const scan_result = async (req, res) => {
+    try {
+      logger.info(`scan_result triggerred!`);
+
+      const { qrContent } = req.query;
+
+      const record = await getTempUser(qrContent);
+      
+      if (!record) {
+          return res.status(400).json({ success: false, message: "無效的 QR Code" });
+      }
+
+      if (record.is_used) {
+          return res.status(400).json({ success: false, message: "QR Code 已被使用" });
+      }
+
+      if (Date.now() > record.expired_at) {
+          return res.status(400).json({ success: false, message: "QR Code 已過期" });
+      }
+
+      record.is_used = true;
+
+      const token = jwt.sign(
+        { qr_token: qrContent }, 
+        process.env.JWT_SECRET,
+        { expiresIn: config.expireTime }
+      );
+
+      res.cookie("token", token, {
+        httpOnly: true,
+        secure: true,    // 建議上線時開啟
+        sameSite: "strict",
+        path: '/',
+      });
+
+      res.render("dashboard", { name: "customer", t: req.t, path: "/api/auth/dashboard", priority: priority_from_role("tester"), layout: "layout" });
+    } catch (err) {
+      console.error("Scan result error:", err);
+      res.status(500).json({ success: false, message: "伺服器錯誤" });
     }
 };
 
@@ -1150,7 +1218,7 @@ export const recycle_bin = async (req, res) => {
         return res.status(201).render("recycle_bin", 
         { layout: "layout", 
           grouped_records: grouped, 
-          priority: priority_from_role(decoded.role, decoded.login_role), 
+          priority: priority_from_role(decoded.role), 
           path: "/api/auth/recycle_bin", 
           id: decoded.id, 
           patient_id: `${decoded.id}-${length}`,
@@ -1299,7 +1367,7 @@ export const quickchangepwd = (req, res) => {
     return res.status(200).render(
         "quick_changepwd", { 
             path: "/api/auth/quick_changepwd", 
-            priority: priority_from_role(decoded.role, decoded.login_role), 
+            priority: priority_from_role(decoded.role), 
             layout: "layout", 
             name: decoded.name,
             email: decoded.email,

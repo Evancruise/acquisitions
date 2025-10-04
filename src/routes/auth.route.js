@@ -38,7 +38,8 @@ import { register,
         sys_import,
         homepage,
         processing,
-        lang_get} from '#controllers/auth.controller.js';
+        lang_get,
+        generate_qr} from '#controllers/auth.controller.js';
 // import { authenticateToken, authorizeRoles } from '#middleware/users.middleware.js';
 // import { sign } from 'jsonwebtoken';
 import multer from "multer";
@@ -67,8 +68,10 @@ router.get("/lang/:lng", lang_get);
 
 router.get("/register", register);
 router.get("/loginPage", loginPage);
+router.get("/generate_qr", generate_qr);
 router.get("/homepage", homepage);
 router.post("/processing", processing);
+router.get("/scan_result", scan_result);
 
 router.get("/dashboard", dashboard);
 router.get("/record", record);

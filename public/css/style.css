@@ -106,16 +106,3 @@ button, .btn {
 button:hover, .btn:hover {
   background: #005a9e;
 }
-
-/* 忘記密碼連結 */
-.link-forgot {
-  display: block;
-  margin-top: 12px;
-  color: #0078d7;
-  text-decoration: none;
-  font-size: 13px;
-}
-
-.link-forgot:hover {
-  text-decoration: underline;
-}
